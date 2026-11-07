@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "jetro": {
+      "type": "stdio",
+      "command": "C:\\Users\\saipr\\.jetro\\runtime\\node-win32-x64.exe",
+      "args": [
+        "C:\\Users\\saipr\\.jetro\\mcp-server\\index.js"
+      ],
+      "env": {
+        "JET_WORKSPACE": "c:\\Users\\saipr\\Videos\\Harness",
+        "JET_API_URL": "https://api.jetro.ai",
+        "PATH": "C:\\Users\\saipr\\.jetro\\runtime;C:\\Program Files\\Common Files\\Oracle\\Java\\javapath;C:\\oraclexe\\app\\oracle\\product\\11.2.0\\server\\bin;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath;c:\\Users\\saipr\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin;D:\\java\\bin;C:\\windows\\system32;C:\\windows;C:\\windows\\System32\\Wbem;C:\\windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\windows\\System32\\OpenSSH\\;C:\\MinGW\\bin;C:\\Program Files\\dotnet\\;C:\\ProgramData\\chocolatey\\bin;C:\\Program Files\\Git\\cmd;C:\\Program Files\\Git\\bin;C:\\Users\\saipr\\AppData\\Local\\Programs\\Python\\Launcher\\;C:\\Users\\saipr\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\;C:\\Users\\saipr\\AppData\\Local\\Programs\\Python\\Python312\\;C:\\Users\\saipr\\AppData\\Local\\Microsoft\\WindowsApps;D:\\JDK\\IntelliJ IDEA 2024.1.1\\bin;C:\\Users\\saipr\\AppData\\Roaming\\npm;C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin;D:\\downloads\\flutter_windows_3.35.5-stable\\flutter\\bin;C:\\Users\\saipr\\AppData\\Local\\Android\\Sdk\\cmdline-tools\\latest\\bin;D:\\npm-global;D:\\npm-global\\node_modules;D:\\;C:\\Program Files\\Docker\\Docker\\resources\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Users\\saipr\\AppData\\Local\\nvm;C:\\nvm4w\\nodejs;C:\\Program Files\\nodejs\\;C:\\Program Files\\sf\\bin;C:\\Program Files\\Java\\jdk-21.0.10\\bin;C:\\Strawberry\\c\\bin;C:\\Strawberry\\perl\\site\\bin;C:\\Strawberry\\perl\\bin;C:\\Program Files\\MySQL\\MySQL Shell 8.0\\bin\\;C:\\flutter\\bin;C:\\Users\\saipr\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\;C:\\Users\\saipr\\AppData\\Local\\Programs\\Python\\Python311\\;C:\\Users\\saipr\\.cargo\\bin;C:\\Python314\\Scripts\\;C:\\Python314\\;C:\\Program Files\\HP\\HP One Agent;C:\\Program Files\\Docke;C:\\Users\\saipr\\AppData\\Local\\Programs\\Antigravity\\bin;C:\\Users\\saipr\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Users\\saipr\\AppData\\Local\\Programs\\Ollama;C:\\Users\\saipr\\AppData\\Local\\Programs\\Python\\Python311\\;C:\\Users\\saipr\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\;C:\\flutter\\bin;C:\\Users\\saipr\\Downloads\\jdk-22_windows-x64_bin\\jdk-22.0.2;C:\\Users\\saipr\\AppData\\Local\\Programs\\Antigravity IDE\\bin;C:\\npm-global;C:\\Users\\saipr\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg.Shared_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.1-full_build-shared\\bin;C:\\Users\\saipr\\.local\\bin;C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin;C:\\Users\\saipr\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\;C:\\Program Files\\mosquitto;C:\\Users\\saipr\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\copilot-shim"
+      }
+    }
+  }
+}

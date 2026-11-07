@@ -1,0 +1,44 @@
+{
+  "speaker_disjoint_verification": "PASSED",
+  "zero_leakage_confirmed": true,
+  "partitions": {
+    "train": {
+      "speakers": [
+        "F01",
+        "F04",
+        "FC02",
+        "M01",
+        "M02",
+        "M04",
+        "MC01"
+      ],
+      "num_speakers": 7,
+      "num_recordings": 7741
+    },
+    "validation": {
+      "speakers": [
+        "F03",
+        "FC01",
+        "M03",
+        "MC04"
+      ],
+      "num_speakers": 4,
+      "num_recordings": 4356
+    },
+    "test": {
+      "speakers": [
+        "FC03",
+        "M05",
+        "MC02",
+        "MC03"
+      ],
+      "num_speakers": 4,
+      "num_recordings": 5535
+    }
+  },
+  "leakage_intersections": {
+    "train_intersect_val": [],
+    "train_intersect_test": [],
+    "val_intersect_test": []
+  }
+}

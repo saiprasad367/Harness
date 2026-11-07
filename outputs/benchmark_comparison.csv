@@ -1,0 +1,8 @@
+Policy / Model,FIR (False Interruption),FWR (False Wait),Accuracy,Precision,Recall,F1-Score,Avg Latency,P90 Latency
+Fixed (500ms),95.1%,23.9%,37.2%,39.8%,76.1%,52.3%,1.01s,1.15s
+Fixed (800ms),93.8%,77.6%,13.5%,16.5%,22.4%,19.0%,1.93s,4.55s
+Fixed (1200ms),72.8%,94.0%,17.6%,6.3%,6.0%,6.2%,4.58s,5.77s
+Fixed (1500ms),34.6%,94.0%,38.5%,12.5%,6.0%,8.1%,4.58s,5.77s
+Adaptive (Quick),95.1%,37.3%,31.1%,35.3%,62.7%,45.2%,1.11s,1.19s
+Adaptive (Normal),93.8%,70.2%,16.9%,20.8%,29.8%,24.5%,1.64s,3.78s
+Adaptive (Patient),91.4%,82.1%,12.8%,14.0%,17.9%,15.7%,2.20s,5.02s

@@ -1,0 +1,156 @@
+[{"stream_name":"stderr","time":8.60997468,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":8.610918999999999,"data":"  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":8.61097835,"data":"    import sys;import papermill as pm;pm.execute_notebook(\"__notebook__.ipynb\",\"__notebook__.ipynb\",progress_bar=False,log_output=True,stdout_file=sys.stdout,stderr_file=sys.stderr,allow_errors=False,timeout=43200)\n"}
+,{"stream_name":"stderr","time":8.61098559,"data":"                                      ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":8.61098949,"data":"  File \"/usr/local/lib/python3.13/dist-packages/papermill/execute.py\", line 113, in execute_notebook\n"}
+,{"stream_name":"stderr","time":8.610992761,"data":"    kernel_name = papermill_engines.nb_kernel_name(engine_name=engine_name, nb=nb, name=kernel_name)\n"}
+,{"stream_name":"stderr","time":8.61099575,"data":"  File \"/usr/local/lib/python3.13/dist-packages/papermill/engines.py\", line 53, in nb_kernel_name\n"}
+,{"stream_name":"stderr","time":8.61099885,"data":"    return self.get_engine(engine_name).nb_kernel_name(nb, name)\n"}
+,{"stream_name":"stderr","time":8.61100177,"data":"           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":8.611004789999999,"data":"  File \"/usr/local/lib/python3.13/dist-packages/papermill/engines.py\", line 386, in nb_kernel_name\n"}
+,{"stream_name":"stderr","time":8.611007821,"data":"    return nb_kernel_name(nb, name)\n"}
+,{"stream_name":"stderr","time":8.611010601,"data":"  File \"/usr/local/lib/python3.13/dist-packages/papermill/utils.py\", line 52, in nb_kernel_name\n"}
+,{"stream_name":"stderr","time":8.61101377,"data":"    raise ValueError(\"No kernel name found in notebook and no override provided.\")\n"}
+,{"stream_name":"stderr","time":8.61101723,"data":"ValueError: No kernel name found in notebook and no override provided.\n"}
+,{"stream_name":"stderr","time":11.664213149,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":11.664278819,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":11.931609097,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":11.931656767,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":12.836176905,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":12.871649047,"data":"[NbConvertApp] ERROR | Notebook JSON is invalid: 'outputs' is a required property\n"}
+,{"stream_name":"stderr","time":12.871702847,"data":"\n"}
+,{"stream_name":"stderr","time":12.871707698,"data":"Failed validating 'required' in code_cell:\n"}
+,{"stream_name":"stderr","time":12.871710927,"data":"\n"}
+,{"stream_name":"stderr","time":12.871713738,"data":"On instance['cells'][1]:\n"}
+,{"stream_name":"stderr","time":12.871716587,"data":"{'cell_type': 'code',\n"}
+,{"stream_name":"stderr","time":12.871719567,"data":" 'execution_count': None,\n"}
+,{"stream_name":"stderr","time":12.871722378,"data":" 'metadata': {},\n"}
+,{"stream_name":"stderr","time":12.871724867,"data":" 'source': '# '\n"}
+,{"stream_name":"stderr","time":12.871727618,"data":"           '==============================================================...'}\n"}
+,{"stream_name":"stderr","time":12.896318273,"data":"[NbConvertApp] ERROR | Notebook is invalid after preprocessor \u003cnbconvert.preprocessors.tagremove.TagRemovePreprocessor object at 0x7d0b108d8050\u003e\n"}
+,{"stream_name":"stderr","time":12.902797727,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":12.904718228,"data":"  File \"/usr/local/bin/jupyter-nbconvert\", line 10, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":12.904746148,"data":"    sys.exit(main())\n"}
+,{"stream_name":"stderr","time":12.904750888,"data":"             ~~~~^^\n"}
+,{"stream_name":"stderr","time":12.904754428,"data":"  File \"/usr/local/lib/python3.13/dist-packages/jupyter_core/application.py\", line 284, in launch_instance\n"}
+,{"stream_name":"stderr","time":12.904757868,"data":"    super().launch_instance(argv=argv, **kwargs)\n"}
+,{"stream_name":"stderr","time":12.904761628,"data":"    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904764778,"data":"  File \"/usr/local/lib/python3.13/dist-packages/traitlets/config/application.py\", line 1080, in launch_instance\n"}
+,{"stream_name":"stderr","time":12.904768308,"data":"    app.start()\n"}
+,{"stream_name":"stderr","time":12.904771508,"data":"    ~~~~~~~~~^^\n"}
+,{"stream_name":"stderr","time":12.904774468,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/nbconvertapp.py\", line 369, in start\n"}
+,{"stream_name":"stderr","time":12.904778138,"data":"    self.convert_notebooks()\n"}
+,{"stream_name":"stderr","time":12.904782688,"data":"    ~~~~~~~~~~~~~~~~~~~~~~^^\n"}
+,{"stream_name":"stderr","time":12.904785698,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/nbconvertapp.py\", line 541, in convert_notebooks\n"}
+,{"stream_name":"stderr","time":12.904788728,"data":"    self.convert_single_notebook(notebook_filename)\n"}
+,{"stream_name":"stderr","time":12.904803408,"data":"    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904806128,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/nbconvertapp.py\", line 506, in convert_single_notebook\n"}
+,{"stream_name":"stderr","time":12.904809298,"data":"    output, resources = self.export_single_notebook(notebook_filename, resources, input_buffer=input_buffer)\n"}
+,{"stream_name":"stderr","time":12.904812368,"data":"                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904815168,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/nbconvertapp.py\", line 435, in export_single_notebook\n"}
+,{"stream_name":"stderr","time":12.904819198,"data":"    output, resources = self.exporter.from_filename(notebook_filename, resources=resources)\n"}
+,{"stream_name":"stderr","time":12.904822158,"data":"                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904825108,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 190, in from_filename\n"}
+,{"stream_name":"stderr","time":12.904828138,"data":"    return self.from_file(f, resources=resources, **kw)\n"}
+,{"stream_name":"stderr","time":12.904830658,"data":"           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904833208,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 208, in from_file\n"}
+,{"stream_name":"stderr","time":12.904836408,"data":"    return self.from_notebook_node(nbformat.read(file_stream, as_version=4), resources=resources, **kw)\n"}
+,{"stream_name":"stderr","time":12.904839278,"data":"           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904872868,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/notebook.py\", line 32, in from_notebook_node\n"}
+,{"stream_name":"stderr","time":12.904877368,"data":"    nb_copy, resources = super().from_notebook_node(nb, resources, **kw)\n"}
+,{"stream_name":"stderr","time":12.904880228,"data":"                         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904883178,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 147, in from_notebook_node\n"}
+,{"stream_name":"stderr","time":12.904886008,"data":"    nb_copy, resources = self._preprocess(nb_copy, resources)\n"}
+,{"stream_name":"stderr","time":12.904888908,"data":"                         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904891508,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 336, in _preprocess\n"}
+,{"stream_name":"stderr","time":12.904894378,"data":"    self._validate_preprocessor(nbc, preprocessor)\n"}
+,{"stream_name":"stderr","time":12.904896898,"data":"    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904899548,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 305, in _validate_preprocessor\n"}
+,{"stream_name":"stderr","time":12.904902418,"data":"    nbformat.validate(nbc, relax_add_props=True)\n"}
+,{"stream_name":"stderr","time":12.904905188,"data":"    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904907638,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbformat/validator.py\", line 434, in validate\n"}
+,{"stream_name":"stderr","time":12.904910488,"data":"    _validate(nbdict, ref, version, version_minor, relax_add_props)\n"}
+,{"stream_name":"stderr","time":12.904913108,"data":"    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":12.904916048,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbformat/validator.py\", line 486, in _validate\n"}
+,{"stream_name":"stderr","time":12.904918858,"data":"    raise error\n"}
+,{"stream_name":"stderr","time":12.904921348,"data":"nbformat.validator.NotebookValidationError: 'outputs' is a required property\n"}
+,{"stream_name":"stderr","time":12.904924068,"data":"\n"}
+,{"stream_name":"stderr","time":12.904926578,"data":"Failed validating 'required' in code_cell:\n"}
+,{"stream_name":"stderr","time":12.904929028,"data":"\n"}
+,{"stream_name":"stderr","time":12.904931688,"data":"On instance['cells'][1]:\n"}
+,{"stream_name":"stderr","time":12.904934358,"data":"{'cell_type': 'code',\n"}
+,{"stream_name":"stderr","time":12.904936838,"data":" 'execution_count': None,\n"}
+,{"stream_name":"stderr","time":12.904939508,"data":" 'metadata': {},\n"}
+,{"stream_name":"stderr","time":12.904942138,"data":" 'source': '# '\n"}
+,{"stream_name":"stderr","time":12.904944758,"data":"           '==============================================================...'}\n"}
+,{"stream_name":"stderr","time":16.067362585,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":16.10631959,"data":"[NbConvertApp] ERROR | Notebook JSON is invalid: 'outputs' is a required property\n"}
+,{"stream_name":"stderr","time":16.10637745,"data":"\n"}
+,{"stream_name":"stderr","time":16.10638218,"data":"Failed validating 'required' in code_cell:\n"}
+,{"stream_name":"stderr","time":16.10638616,"data":"\n"}
+,{"stream_name":"stderr","time":16.10641684,"data":"On instance['cells'][1]:\n"}
+,{"stream_name":"stderr","time":16.106421329,"data":"{'cell_type': 'code',\n"}
+,{"stream_name":"stderr","time":16.106424929,"data":" 'execution_count': None,\n"}
+,{"stream_name":"stderr","time":16.106428329,"data":" 'metadata': {},\n"}
+,{"stream_name":"stderr","time":16.10643112,"data":" 'source': '# '\n"}
+,{"stream_name":"stderr","time":16.10643397,"data":"           '==============================================================...'}\n"}
+,{"stream_name":"stderr","time":16.152428149,"data":"[NbConvertApp] ERROR | Notebook is invalid after preprocessor \u003cnbconvert.preprocessors.tagremove.TagRemovePreprocessor object at 0x7b35ed2cf2a0\u003e\n"}
+,{"stream_name":"stderr","time":16.15397207,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":16.155902691,"data":"  File \"/usr/local/bin/jupyter-nbconvert\", line 10, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":16.155930891,"data":"    sys.exit(main())\n"}
+,{"stream_name":"stderr","time":16.155935801,"data":"             ~~~~^^\n"}
+,{"stream_name":"stderr","time":16.155938881,"data":"  File \"/usr/local/lib/python3.13/dist-packages/jupyter_core/application.py\", line 284, in launch_instance\n"}
+,{"stream_name":"stderr","time":16.155942161,"data":"    super().launch_instance(argv=argv, **kwargs)\n"}
+,{"stream_name":"stderr","time":16.155945111,"data":"    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.155948051,"data":"  File \"/usr/local/lib/python3.13/dist-packages/traitlets/config/application.py\", line 1080, in launch_instance\n"}
+,{"stream_name":"stderr","time":16.155950981,"data":"    app.start()\n"}
+,{"stream_name":"stderr","time":16.155954111,"data":"    ~~~~~~~~~^^\n"}
+,{"stream_name":"stderr","time":16.155957031,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/nbconvertapp.py\", line 369, in start\n"}
+,{"stream_name":"stderr","time":16.155961381,"data":"    self.convert_notebooks()\n"}
+,{"stream_name":"stderr","time":16.155964701,"data":"    ~~~~~~~~~~~~~~~~~~~~~~^^\n"}
+,{"stream_name":"stderr","time":16.155967471,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/nbconvertapp.py\", line 541, in convert_notebooks\n"}
+,{"stream_name":"stderr","time":16.155970441,"data":"    self.convert_single_notebook(notebook_filename)\n"}
+,{"stream_name":"stderr","time":16.155972961,"data":"    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.155976441,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/nbconvertapp.py\", line 506, in convert_single_notebook\n"}
+,{"stream_name":"stderr","time":16.155979971,"data":"    output, resources = self.export_single_notebook(notebook_filename, resources, input_buffer=input_buffer)\n"}
+,{"stream_name":"stderr","time":16.155983131,"data":"                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.155986201,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/nbconvertapp.py\", line 435, in export_single_notebook\n"}
+,{"stream_name":"stderr","time":16.155989931,"data":"    output, resources = self.exporter.from_filename(notebook_filename, resources=resources)\n"}
+,{"stream_name":"stderr","time":16.155992631,"data":"                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.155995341,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 190, in from_filename\n"}
+,{"stream_name":"stderr","time":16.156024651,"data":"    return self.from_file(f, resources=resources, **kw)\n"}
+,{"stream_name":"stderr","time":16.156027881,"data":"           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.156030661,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 208, in from_file\n"}
+,{"stream_name":"stderr","time":16.156033591,"data":"    return self.from_notebook_node(nbformat.read(file_stream, as_version=4), resources=resources, **kw)\n"}
+,{"stream_name":"stderr","time":16.156036891,"data":"           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.156041281,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/html.py\", line 211, in from_notebook_node\n"}
+,{"stream_name":"stderr","time":16.156044701,"data":"    return super().from_notebook_node(nb, resources, **kw)\n"}
+,{"stream_name":"stderr","time":16.156047381,"data":"           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.156050351,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/templateexporter.py\", line 375, in from_notebook_node\n"}
+,{"stream_name":"stderr","time":16.156053281,"data":"    nb_copy, resources = super().from_notebook_node(nb, resources, **kw)\n"}
+,{"stream_name":"stderr","time":16.156056381,"data":"                         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.156059331,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 147, in from_notebook_node\n"}
+,{"stream_name":"stderr","time":16.156062281,"data":"    nb_copy, resources = self._preprocess(nb_copy, resources)\n"}
+,{"stream_name":"stderr","time":16.156064851,"data":"                         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.156067801,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 336, in _preprocess\n"}
+,{"stream_name":"stderr","time":16.156070541,"data":"    self._validate_preprocessor(nbc, preprocessor)\n"}
+,{"stream_name":"stderr","time":16.156102011,"data":"    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.156107591,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbconvert/exporters/exporter.py\", line 305, in _validate_preprocessor\n"}
+,{"stream_name":"stderr","time":16.156110801,"data":"    nbformat.validate(nbc, relax_add_props=True)\n"}
+,{"stream_name":"stderr","time":16.156113331,"data":"    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.156115931,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbformat/validator.py\", line 434, in validate\n"}
+,{"stream_name":"stderr","time":16.156118811,"data":"    _validate(nbdict, ref, version, version_minor, relax_add_props)\n"}
+,{"stream_name":"stderr","time":16.156121471,"data":"    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":16.156124301,"data":"  File \"/usr/local/lib/python3.13/dist-packages/nbformat/validator.py\", line 486, in _validate\n"}
+,{"stream_name":"stderr","time":16.156127621,"data":"    raise error\n"}
+,{"stream_name":"stderr","time":16.156130261,"data":"nbformat.validator.NotebookValidationError: 'outputs' is a required property\n"}
+,{"stream_name":"stderr","time":16.156133361,"data":"\n"}
+,{"stream_name":"stderr","time":16.156135791,"data":"Failed validating 'required' in code_cell:\n"}
+,{"stream_name":"stderr","time":16.156138561,"data":"\n"}
+,{"stream_name":"stderr","time":16.156148041,"data":"On instance['cells'][1]:\n"}
+,{"stream_name":"stderr","time":16.156151471,"data":"{'cell_type': 'code',\n"}
+,{"stream_name":"stderr","time":16.156154141,"data":" 'execution_count': None,\n"}
+,{"stream_name":"stderr","time":16.156157011,"data":" 'metadata': {},\n"}
+,{"stream_name":"stderr","time":16.156159711,"data":" 'source': '# '\n"}
+,{"stream_name":"stderr","time":16.156162431,"data":"           '==============================================================...'}\n"}
+]

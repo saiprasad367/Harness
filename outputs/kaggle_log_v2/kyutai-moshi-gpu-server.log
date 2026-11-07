@@ -1,0 +1,59 @@
+[{"stream_name":"stderr","time":8.76897823,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.769048991,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.769055846,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.769060116,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":9.537332116,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":9.537372487,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":9.537378202,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":9.53738252,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":14.530646827,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":14.530689073,"data":"📋 STAGE 1: ENVIRONMENT \u0026 RESOURCE AUDIT\n"}
+,{"stream_name":"stdout","time":14.530696799,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":14.530701615,"data":"• Python Version   : 3.13.18\n"}
+,{"stream_name":"stdout","time":14.530705285,"data":"• PyTorch Version  : 2.11.0+cpu\n"}
+,{"stream_name":"stdout","time":14.530709148,"data":"• CUDA Available   : False\n"}
+,{"stream_name":"stdout","time":14.53071469,"data":"⚠️ WARNING: No GPU detected! Please enable 'GPU T4 x2' in the right sidebar.\n"}
+,{"stream_name":"stdout","time":14.530723515,"data":"• Free Disk Space  : 19.5 GB (Required: ~16 GB)\n"}
+,{"stream_name":"stdout","time":14.530726156,"data":"• Available RAM    : 30.1 GB\n"}
+,{"stream_name":"stdout","time":14.530728995,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":14.565524676999999,"data":"/bin/bash: line 1: nvidia-smi: command not found\r\n"}
+,{"stream_name":"stdout","time":14.731582879,"data":"Installing Kyutai Moshi \u0026 Gradio dependencies...\n"}
+,{"stream_name":"stdout","time":47.711122543,"data":"\u001b[33mWARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -3] Temporary failure in name resolution)\")': /simple/moshi/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":80.19727092,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -3] Temporary failure in name resolution)\")': /simple/moshi/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":113.203382781,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -3] Temporary failure in name resolution)\")': /simple/moshi/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":147.251437575,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -3] Temporary failure in name resolution)\")': /simple/moshi/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":183.245727996,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -3] Temporary failure in name resolution)\")': /simple/moshi/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":215.237018244,"data":"\u001b[0m\u001b[31mERROR: Could not find a version that satisfies the requirement moshi (from versions: none)\u001b[0m\u001b[31m\r\n"}
+,{"stream_name":"stdout","time":215.237050146,"data":"\u001b[0m\u001b[31mERROR: No matching distribution found for moshi\u001b[0m\u001b[31m\r\n"}
+,{"stream_name":"stderr","time":216.460996557,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":216.461686396,"data":"  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":216.461709859,"data":"    import sys;import papermill as pm;pm.execute_notebook(\"__notebook__.ipynb\",\"__notebook__.ipynb\",progress_bar=False,log_output=True,stdout_file=sys.stdout,stderr_file=sys.stderr,allow_errors=False,timeout=43200)\n"}
+,{"stream_name":"stderr","time":216.461714924,"data":"                                      ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":216.46171892,"data":"  File \"/usr/local/lib/python3.13/dist-packages/papermill/execute.py\", line 131, in execute_notebook\n"}
+,{"stream_name":"stderr","time":216.461722605,"data":"    raise_for_execution_errors(nb, output_path)\n"}
+,{"stream_name":"stderr","time":216.461725965,"data":"    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":216.461729469,"data":"  File \"/usr/local/lib/python3.13/dist-packages/papermill/execute.py\", line 251, in raise_for_execution_errors\n"}
+,{"stream_name":"stderr","time":216.461732991,"data":"    raise error\n"}
+,{"stream_name":"stderr","time":216.461736364,"data":"papermill.exceptions.PapermillExecutionError: \n"}
+,{"stream_name":"stderr","time":216.461739713,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":216.461743193,"data":"Exception encountered at \"In [3]\":\n"}
+,{"stream_name":"stderr","time":216.461746589,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":216.461750001,"data":"ModuleNotFoundError                       Traceback (most recent call last)\n"}
+,{"stream_name":"stderr","time":216.46175338,"data":"/tmp/ipykernel_16/3632656357.py in \u003ccell line: 0\u003e()\n"}
+,{"stream_name":"stderr","time":216.461756924,"data":"      6 \n"}
+,{"stream_name":"stderr","time":216.461760187,"data":"      7 # Verify import\n"}
+,{"stream_name":"stderr","time":216.46176356,"data":"----\u003e 8 import moshi\n"}
+,{"stream_name":"stderr","time":216.461766964,"data":"      9 print(f\"✅ Kyutai Moshi installed successfully (Version: {getattr(moshi, '__version__', 'latest')})\")\n"}
+,{"stream_name":"stderr","time":216.461771091,"data":"\n"}
+,{"stream_name":"stderr","time":216.461774319,"data":"ModuleNotFoundError: No module named 'moshi'\n"}
+,{"stream_name":"stderr","time":216.461777643,"data":"\n"}
+,{"stream_name":"stderr","time":219.382307307,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":219.382345038,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":219.578263839,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":219.578296176,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":220.48624409,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":220.582142627,"data":"[NbConvertApp] Writing 12549 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":223.873905791,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":224.488786213,"data":"[NbConvertApp] Writing 291699 bytes to __results__.html\n"}
+,{"stream_name":"stdout","time":225.456778391,"data":"\u001b[0m"}
+]

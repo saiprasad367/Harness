@@ -1,0 +1,44 @@
+{
+  "Fixed (500ms)": {
+    "TP": 51,
+    "FP": 77,
+    "TN": 4,
+    "FN": 16
+  },
+  "Fixed (800ms)": {
+    "TP": 15,
+    "FP": 76,
+    "TN": 5,
+    "FN": 52
+  },
+  "Fixed (1200ms)": {
+    "TP": 4,
+    "FP": 59,
+    "TN": 22,
+    "FN": 63
+  },
+  "Fixed (1500ms)": {
+    "TP": 4,
+    "FP": 28,
+    "TN": 53,
+    "FN": 63
+  },
+  "Adaptive (Quick)": {
+    "TP": 42,
+    "FP": 77,
+    "TN": 4,
+    "FN": 25
+  },
+  "Adaptive (Normal)": {
+    "TP": 20,
+    "FP": 76,
+    "TN": 5,
+    "FN": 47
+  },
+  "Adaptive (Patient)": {
+    "TP": 12,
+    "FP": 74,
+    "TN": 7,
+    "FN": 55
+  }
+}

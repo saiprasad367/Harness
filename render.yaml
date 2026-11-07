@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: harness-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "uvicorn api_server:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MOSHI_SERVER_URL
+        value: "https://51b58c1cff28da6cf5.gradio.live/"

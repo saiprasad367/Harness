@@ -1,0 +1,2 @@
+train_samples,val_samples,feature_names,val_accuracy,val_f1_macro,val_auc,train_speakers,val_speakers
+579,97,"['current_pause_sec', 'recent_mean_pause_sec', 'pause_std_dev', 'preset_weight']",0.979381443298969,0.9658931082981717,0.9723346828609987,['FC02'],['FC01']

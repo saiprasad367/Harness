@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rootDirectory": "Frontend/open-turn-voice-lab",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install"
+}

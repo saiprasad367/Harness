@@ -1,0 +1,55 @@
+# Adaptive Voice Harness — Project .gitignore
+
+# Python bytecode & caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments & secret config
+.venv/
+venv/
+env/
+.env
+config/kaggle_credentials.json
+
+# Node & Frontend build caches
+node_modules/
+.output/
+.tanstack/
+.wrangler/
+.nitro/
+.lovable/
+
+# Dataset raw audio files (large binaries - download separately)
+dataset/
+*.wav
+*.mp3
+*.flac
+*.ogg
+
+# Streamlit cache
+.streamlit/
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Temp files
+*.tmp
+*.bak
+*.swp
+.matplotlib/

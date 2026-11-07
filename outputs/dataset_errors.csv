@@ -1,0 +1,4 @@
+file_path,file_name,speaker_id,error_type,details
+C:\Users\saipr\Videos\Harness\dataset\F_Con\wav_arrayMic_FC01S01\wav_arrayMic_FC01S01_0256.wav,wav_arrayMic_FC01S01_0256.wav,FC01,EMPTY_RECORDING,0 audio frames or zero duration
+C:\Users\saipr\Videos\Harness\dataset\F_Dys\wav_headMic_F01\wav_headMic_F01_0067.wav,wav_headMic_F01_0067.wav,F01,UNREADABLE_FILE,Error opening 'C:\\Users\\saipr\\Videos\\Harness\\dataset\\F_Dys\\wav_headMic_F01\\wav_headMic_F01_0067.wav': Format not recognised.
+C:\Users\saipr\Videos\Harness\dataset\F_Dys\wav_headMic_F01\wav_headMic_F01_0068.wav,wav_headMic_F01_0068.wav,F01,UNREADABLE_FILE,Error opening 'C:\\Users\\saipr\\Videos\\Harness\\dataset\\F_Dys\\wav_headMic_F01\\wav_headMic_F01_0068.wav': Format not recognised.
