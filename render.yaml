@@ -11,3 +11,4 @@ services:
         value: 3.11.9
       - key: MOSHI_SERVER_URL
         value: "https://51b58c1cff28da6cf5.gradio.live/"
+
