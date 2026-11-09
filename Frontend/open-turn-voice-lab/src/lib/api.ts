@@ -197,8 +197,10 @@ export const api = {
   getBenchmarks: () => apiFetch<BenchmarkResult>("/api/evaluation/benchmarks"),
   getEvaluationResults: () => apiFetch<{ runs: unknown[] }>("/api/evaluation/results"),
 
-  runSimulation: (mode: string, speaker?: string) =>
-    apiFetch<SimulationResult>(`/api/simulation/run?mode=${encodeURIComponent(mode)}${speaker ? `&speaker=${encodeURIComponent(speaker)}` : ""}`),
+  runSimulation: (mode: string, speaker?: string, recording?: string) =>
+    apiFetch<SimulationResult>(
+      `/api/simulation/run?mode=${encodeURIComponent(mode)}${speaker ? `&speaker=${encodeURIComponent(speaker)}` : ""}${recording ? `&recording=${encodeURIComponent(recording)}` : ""}`
+    ),
 
   getAnnotationQueue: () => apiFetch<AnnotationQueue>("/api/annotation/queue"),
   submitAnnotationLabel: (payload: {

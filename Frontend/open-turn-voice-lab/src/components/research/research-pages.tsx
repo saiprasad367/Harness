@@ -490,25 +490,68 @@ function VoiceStudio() {
 function SimulationStudio() {
   const [mode, setMode] = useState("Patient");
   const [speaker, setSpeaker] = useState("FC02");
+  const [selectedRecording, setSelectedRecording] = useState<string>("");
   const [speed, setSpeed] = useState(1);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(25);
-  const simQuery = useSimulation(mode, speaker, true);
 
   const liveRecording = typeof window !== "undefined" ? (window as any).__LATEST_RECORDED_AUDIO__ : null;
-
   const isLive = speaker === "My Live Session";
+
+  const recordingsQuery = useRecordings(isLive ? "" : speaker);
+  const recordings = recordingsQuery.data?.recordings ?? [];
+
+  const activeRecordingFilename = selectedRecording || recordings[0]?.filename || "";
+  const currentRec = recordings.find((r) => r.filename === activeRecordingFilename) || recordings[0];
+
+  const simQuery = useSimulation(mode, speaker, isLive ? undefined : activeRecordingFilename, true);
+
   const simAudioUrl = isLive && liveRecording
     ? liveRecording.url
-    : `http://localhost:8000/api/audio/stream/wav_headMic_${speaker}S01_0001.wav`;
+    : (currentRec?.audioUrl || (activeRecordingFilename ? `http://localhost:8000/api/audio/stream/${activeRecordingFilename}` : ""));
 
   const speakerOptions = useMemo(() => {
-    const list = ["FC01", "FC02", "FC03", "MC01", "MC02", "F01", "M01"];
+    const list = ["FC01", "FC02", "FC03", "MC01", "MC02", "MC03", "MC04", "F01", "F03", "F04", "M01", "M02", "M03", "M04", "M05"];
     if (liveRecording) {
       return ["My Live Session", ...list];
     }
     return list;
   }, [liveRecording]);
+
+  const recordingOptions = useMemo(() => {
+    if (isLive) return ["live_session.webm"];
+    if (recordings.length > 0) return recordings.map((r) => r.filename);
+    return [`REC-${speaker}-0001`];
+  }, [isLive, recordings, speaker]);
+
+  const isDisjointTest = ["FC03", "MC02", "MC03", "M05"].includes(speaker);
+  const isDisjointVal = ["FC01", "MC04", "M03", "F03"].includes(speaker);
+  const partitionBadge = isLive
+    ? { label: "User Audio", tone: "good" as const }
+    : isDisjointTest
+    ? { label: "Disjoint Test Split", tone: "good" as const }
+    : isDisjointVal
+    ? { label: "Disjoint Validation", tone: "good" as const }
+    : { label: "Training Partition", tone: "info" as const };
+
+  const [simResult, setSimResult] = useState<any>(null);
+  const [runningSim, setRunningSim] = useState(false);
+
+  const handleRunSimulation = async () => {
+    setProgress(0);
+    setPlaying(true);
+    setRunningSim(true);
+    notify(`Running real VAD + Adaptive turn simulation for ${isLive ? 'My Live Session' : activeRecordingFilename}...`);
+    try {
+      const res = await api.runSimulation(mode, speaker, isLive ? undefined : activeRecordingFilename);
+      setSimResult(res);
+      setProgress(100);
+    } catch (e) {
+      console.warn("Simulation run failed:", e);
+    } finally {
+      setRunningSim(false);
+    }
+  };
 
   const events = isLive && liveRecording ? [
     { time: "00:00.6", event: "User speech initiated", detail: "Microphone RMS -34 dBFS · Silero VAD active" },
@@ -516,18 +559,12 @@ function SimulationStudio() {
     { time: "00:03.2", event: "Intra-turn pause · 0.42 s", detail: "Mid-utterance breath · Patient threshold active" },
     { time: "00:04.0", event: "CONTINUE intent verified", detail: "Adaptive model held turn · 0 false interruption" },
     { time: `00:${String(liveRecording.duration).padStart(2, '0')}.0`, event: "Terminal silence detected", detail: "END confirmed · Response release scheduled" },
-  ] : (simQuery.data?.events ?? [
-    { time: "00:00.8", event: "Speech begins", detail: "VAD probability crosses 0.50" },
-    { time: "00:02.2", event: "Speech continues", detail: "User turn remains active" },
-    { time: "00:03.4", event: "Pause detected · 0.86 s", detail: "Silero VAD pause window opened" },
-    { time: "00:04.2", event: "CONTINUE prediction", detail: "Adaptive controller holds the turn" },
-    { time: "00:05.1", event: "END candidate · 1.72 s", detail: "Response scheduled · zero false interruption" },
-  ]);
+  ] : (simResult?.events ?? simQuery.data?.events ?? []);
 
   const comparison = isLive ? {
     adaptive: { END: 1, CONTINUE: 4, false_interruptions: 0, delayed_responses: 0, avg_response_delay_s: 1.2 },
     fixed: { END: 3, CONTINUE: 1, false_interruptions: 2, delayed_responses: 1, avg_response_delay_s: 0.8 },
-  } : simQuery.data?.comparison;
+  } : (simResult?.comparison ?? simQuery.data?.comparison);
 
   return <>
     <PageHeader
@@ -535,8 +572,8 @@ function SimulationStudio() {
       title="Simulation Studio"
       description="Replay candidate pauses from TORGO recordings or your live microphone session against adaptive and fixed-threshold controllers."
       actions={
-        <Button onClick={() => { setProgress(0); setPlaying(true); notify(`Simulation running for ${isLive ? 'My Live Session' : speaker}...`); }}>
-          <Play className="size-4" />Run simulation
+        <Button onClick={handleRunSimulation} disabled={runningSim}>
+          <Play className="size-4" />{runningSim ? "Simulating..." : "Run simulation"}
         </Button>
       }
     />
@@ -544,12 +581,12 @@ function SimulationStudio() {
       <section className={cardClass("p-4 md:p-5")}>
         <SectionTitle
           title="Simulation Input"
-          detail={isLive ? "Physical user microphone recording" : "TORGO clean head-mic recording"}
-          action={<StatusBadge label={isLive ? "User Audio" : "Disjoint Audio"} tone="good" />}
+          detail={isLive ? "Physical user microphone recording" : `TORGO clean head-mic: ${activeRecordingFilename}`}
+          action={<StatusBadge label={partitionBadge.label} tone={partitionBadge.tone} />}
         />
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
-          <SelectField label="Speaker" value={speaker} options={speakerOptions} onChange={setSpeaker} />
-          <SelectField label="Recording" value={isLive ? "live_session.webm" : `REC-${speaker}-0042`} options={isLive ? ["live_session.webm"] : [`REC-${speaker}-0042`, `REC-${speaker}-0019`]} />
+          <SelectField label="Speaker" value={speaker} options={speakerOptions} onChange={(s) => { setSpeaker(s); setSelectedRecording(""); }} />
+          <SelectField label="Recording" value={activeRecordingFilename} options={recordingOptions} onChange={setSelectedRecording} />
           <SelectField label="Accessibility mode" value={mode} options={["Patient", "Normal", "Quick"]} onChange={setMode} />
         </div>
         <div className="rounded-lg border border-border p-3">
@@ -557,7 +594,7 @@ function SimulationStudio() {
           <div className="mt-2 flex justify-between font-mono text-[9px] text-muted-foreground">
             <span>00:00</span>
             <span>{isLive && liveRecording ? `00:${String(Math.floor(liveRecording.duration / 2)).padStart(2, '0')}` : "02:16"}</span>
-            <span>{isLive && liveRecording ? `00:${String(liveRecording.duration).padStart(2, '0')}` : "04:32"}</span>
+            <span>{isLive && liveRecording ? `00:${String(liveRecording.duration).padStart(2, '0')}` : (currentRec?.duration || "00:04")}</span>
           </div>
           {/* Audio Player */}
           <div className="mt-3 pt-3 border-t border-border flex items-center justify-between gap-3">
@@ -581,11 +618,11 @@ function SimulationStudio() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">END decisions</td><td className="py-2 font-bold">{comparison?.adaptive.END ?? 42}</td><td className="py-2">{comparison?.fixed.END ?? 49}</td></tr>
-              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">CONTINUE decisions</td><td className="py-2 font-bold">{comparison?.adaptive.CONTINUE ?? 35}</td><td className="py-2">{comparison?.fixed.CONTINUE ?? 29}</td></tr>
-              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">False interruptions</td><td className="py-2 font-bold text-status-good">{comparison?.adaptive.false_interruptions ?? 4}</td><td className="py-2 text-status-danger">{comparison?.fixed.false_interruptions ?? 9}</td></tr>
-              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">Delayed responses</td><td className="py-2 font-bold">{comparison?.adaptive.delayed_responses ?? 7}</td><td className="py-2">{comparison?.fixed.delayed_responses ?? 11}</td></tr>
-              <tr><td className="py-2 text-muted-foreground">Avg. response delay</td><td className="py-2 font-bold">{comparison?.adaptive.avg_response_delay_s ?? 1.42} s</td><td className="py-2">{comparison?.fixed.avg_response_delay_s ?? 1.18} s</td></tr>
+              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">END decisions</td><td className="py-2 font-bold">{comparison?.adaptive.END ?? 0}</td><td className="py-2">{comparison?.fixed.END ?? 0}</td></tr>
+              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">CONTINUE decisions</td><td className="py-2 font-bold">{comparison?.adaptive.CONTINUE ?? 0}</td><td className="py-2">{comparison?.fixed.CONTINUE ?? 0}</td></tr>
+              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">False interruptions</td><td className="py-2 font-bold text-status-good">{comparison?.adaptive.false_interruptions ?? 0}</td><td className="py-2 text-status-danger">{comparison?.fixed.false_interruptions ?? 0}</td></tr>
+              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">Delayed responses</td><td className="py-2 font-bold">{comparison?.adaptive.delayed_responses ?? 0}</td><td className="py-2">{comparison?.fixed.delayed_responses ?? 0}</td></tr>
+              <tr><td className="py-2 text-muted-foreground">Avg. response delay</td><td className="py-2 font-bold">{comparison?.adaptive.avg_response_delay_s ?? 0} s</td><td className="py-2">{comparison?.fixed.avg_response_delay_s ?? 0} s</td></tr>
             </tbody>
           </table>
         </div>
@@ -711,19 +748,14 @@ function DatasetExplorer() {
           <div className="mt-5 rounded-lg border border-border p-3">
             <Waveform seed={selected.seconds} bars={80} />
             <div className="mt-2 flex justify-between text-[10px] text-muted-foreground"><span>00:00</span><span>{selected.duration}</span></div>
-            <div className="mt-3 flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  const url = selected.audioUrl || `http://localhost:8000/api/audio/stream/${selected.filename || 'wav_arrayMic_FC01S01_0001.wav'}`;
-                  const audio = new Audio(url);
-                  audio.play().catch((err) => notify(`Audio: ${err}`));
-                  notify(`Playing ${selected.id}...`);
-                }}
+            <div className="mt-3 flex flex-col gap-2">
+              <audio
+                controls
+                className="w-full h-9"
+                src={selected.audioUrl || (selected.filename ? `http://localhost:8000/api/audio/stream/${selected.filename}` : undefined)}
               >
-                <Play className="size-3.5 mr-1" /> Play Audio
-              </Button>
+                Your browser does not support the audio element.
+              </audio>
             </div>
           </div>
         </section>
@@ -770,7 +802,7 @@ function AnnotationStudio() {
   const candidates = sourceMode === "live" && liveCandidate ? [liveCandidate] : torgoCandidates;
   const current = candidates[selectedIndex] ?? candidates[0];
 
-  const audioUrl = current?.audioUrl || (current?.recording ? `http://localhost:8000/api/audio/stream/${current.recording}` : "http://localhost:8000/api/audio/stream/wav_headMic_FC01S01_0001.wav");
+  const audioUrl = current?.audioUrl || (current?.recording ? `http://localhost:8000/api/audio/stream/${current.recording}` : undefined);
 
   const handleSave = async (andNext = false) => {
     if (!current || !decision) {

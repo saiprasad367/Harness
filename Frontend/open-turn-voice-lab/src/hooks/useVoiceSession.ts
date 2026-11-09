@@ -107,6 +107,36 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
   // Silence tracking
   const silenceStartRef = useRef<number | null>(null);
 
+  const playbackCtxRef = useRef<AudioContext | null>(null);
+
+  const playAssistantAudio = useCallback((base64Data: string) => {
+    try {
+      if (!playbackCtxRef.current || playbackCtxRef.current.state === "closed") {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        playbackCtxRef.current = new AudioCtx({ sampleRate: 16000 });
+      }
+      const ctx = playbackCtxRef.current;
+      const binary = atob(base64Data);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const int16 = new Int16Array(bytes.buffer);
+      const float32 = new Float32Array(int16.length);
+      for (let i = 0; i < int16.length; i++) {
+        float32[i] = int16[i] / 32768.0;
+      }
+      const buffer = ctx.createBuffer(1, float32.length, 16000);
+      buffer.copyToChannel(float32, 0);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start();
+    } catch (e) {
+      console.warn("Audio playback exception:", e);
+    }
+  }, []);
+
   const addTimelineEvent = useCallback(
     (type: string, title: string, detail: string) => {
       eventCounterRef.current += 1;
@@ -202,8 +232,8 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
 
       const source = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 64; // 32 frequency bins
-      analyser.smoothingTimeConstant = 0.6;
+      analyser.fftSize = 128; // 64 frequency bins
+      analyser.smoothingTimeConstant = 0.7;
       analyserRef.current = analyser;
 
       const processor = ctx.createScriptProcessor(CHUNK_SIZE, 1, 1);
@@ -216,14 +246,14 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
       const freqArray = new Uint8Array(analyser.frequencyBinCount);
       const timeData = new Uint8Array(analyser.fftSize);
 
-      // Real-time animation loop for frequency graph & audio level
+      // Real-time animation loop for frequency graph & microphone audio level
       const updateAudioVisuals = () => {
         if (!analyserRef.current || isPausedRef.current) return;
         analyserRef.current.getByteFrequencyData(freqArray);
         analyserRef.current.getByteTimeDomainData(timeData);
 
         // Convert frequency bins to normalized 0-100 values
-        const normalized = Array.from(freqArray).map((v) => Math.round((v / 255) * 100));
+        const normalized = Array.from(freqArray.slice(0, 32)).map((v) => Math.round((v / 255) * 100));
         setFrequencyData(normalized);
 
         // Calculate real RMS dBFS
@@ -235,48 +265,6 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
         const rms = Math.sqrt(sum / timeData.length);
         const db = Math.round(Math.max(-60, 20 * Math.log10(Math.max(rms, 1e-4))));
         setMicLevel(db);
-
-        // Real-time VAD decision logic
-        const isSpeech = db > -42;
-        const now = Date.now() / 1000;
-
-        if (isSpeech) {
-          silenceStartRef.current = null;
-          setVadState("SPEECH");
-          setSpeechProb(0.98);
-          setPauseDuration(0.0);
-          setAdaptiveIntention("SPEAKING");
-          setPEnd(0.0);
-          setControllerState("LISTENING");
-          setControllerAction("WAIT_AND_LISTEN");
-        } else {
-          setVadState("SILENCE");
-          setSpeechProb(Math.max(0.02, Math.min(0.2, (db + 60) / 100)));
-
-          if (silenceStartRef.current === null) {
-            silenceStartRef.current = now;
-          }
-          const silSec = Math.round((now - silenceStartRef.current) * 10) / 10;
-          setPauseDuration(silSec);
-
-          const threshold = modeStr === "Patient" ? 1.2 : modeStr === "Normal" ? 0.8 : 0.45;
-          if (silSec < threshold * 0.7) {
-            setAdaptiveIntention("CONTINUE");
-            setPEnd(Math.min(0.4, silSec / threshold));
-            setControllerState("PAUSE_EVAL");
-            setControllerAction("WAIT_AND_LISTEN");
-          } else if (silSec < threshold) {
-            setAdaptiveIntention("UNCERTAIN");
-            setPEnd(0.65);
-            setControllerState("PAUSE_EVAL");
-            setControllerAction("WAIT_AND_LISTEN");
-          } else {
-            setAdaptiveIntention("END");
-            setPEnd(0.95);
-            setControllerState("SPEAKING");
-            setControllerAction("RELEASE_RESPONSE");
-          }
-        }
 
         animFrameRef.current = requestAnimationFrame(updateAudioVisuals);
       };
@@ -358,8 +346,20 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
           const ws = createVoiceSocket(
             (msg) => {
               if (msg.type === "state_update") {
-                if (msg.vad_latency_ms) setVadLatencyMs(Number(msg.vad_latency_ms));
-                if (msg.decision_latency_ms) setDecisionLatencyMs(Number(msg.decision_latency_ms));
+                if (msg.vad_state !== undefined) setVadState(msg.vad_state);
+                if (msg.speech_prob !== undefined) setSpeechProb(Number(msg.speech_prob));
+                if (msg.pause_duration !== undefined) setPauseDuration(Number(msg.pause_duration));
+                if (msg.adaptive_intention !== undefined) setAdaptiveIntention(msg.adaptive_intention);
+                if (msg.p_end !== undefined) setPEnd(Number(msg.p_end));
+                if (msg.controller_state !== undefined) setControllerState(msg.controller_state);
+                if (msg.controller_action !== undefined) setControllerAction(msg.controller_action);
+                if (msg.vad_latency_ms !== undefined) setVadLatencyMs(Number(msg.vad_latency_ms));
+                if (msg.decision_latency_ms !== undefined) setDecisionLatencyMs(Number(msg.decision_latency_ms));
+              } else if (msg.type === "assistant_audio" && msg.data) {
+                playAssistantAudio(msg.data);
+                if (msg.text) {
+                  addTimelineEvent("Agent", "Agent spoken response", msg.text);
+                }
               }
             },
             () => {},

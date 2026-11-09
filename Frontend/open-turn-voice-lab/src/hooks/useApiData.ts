@@ -60,10 +60,10 @@ export function useEvaluationResults() {
 }
 
 // ── Simulation ────────────────────────────────────────────────────────────────
-export function useSimulation(mode: string, speaker?: string, enabled = false) {
+export function useSimulation(mode: string, speaker?: string, recording?: string, enabled = true) {
   return useQuery({
-    queryKey: ["simulation", mode, speaker],
-    queryFn: () => api.runSimulation(mode, speaker),
+    queryKey: ["simulation", mode, speaker, recording],
+    queryFn: () => api.runSimulation(mode, speaker, recording),
     enabled,
     staleTime: 10_000,
   });
