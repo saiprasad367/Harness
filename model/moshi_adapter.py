@@ -22,6 +22,13 @@ import numpy as np
 import scipy.signal
 import torch
 
+try:
+    import sphn
+    SPHN_AVAILABLE = True
+except ImportError:
+    SPHN_AVAILABLE = False
+    sphn = None
+
 log = logging.getLogger(__name__)
 
 
@@ -88,6 +95,9 @@ class MoshiModelAdapter:
         self._websocket = None
         self._is_session_active = False
         self._interrupted = False
+        self._opus_writer = None
+        self._opus_reader = None
+        self._send_pcm_buffer: np.ndarray = np.zeros((0,), dtype=np.float32)
 
         # Real-time Telemetry & Diagnostics
         self.total_frames_sent: int = 0
@@ -171,11 +181,22 @@ class MoshiModelAdapter:
         self._is_session_active = True
         self._interrupted = False
         self.state = MoshiConnectionState.SESSION_ACTIVE
+        self._send_pcm_buffer = np.zeros((0,), dtype=np.float32)
+
+        if SPHN_AVAILABLE and sphn is not None:
+            try:
+                self._opus_writer = sphn.OpusStreamWriter(self.moshi_sample_rate)
+                self._opus_reader = sphn.OpusStreamReader(self.moshi_sample_rate)
+            except Exception as e:
+                log.warning("Could not instantiate sphn Opus codecs: %s", e)
+                self._opus_writer = None
+                self._opus_reader = None
 
     async def send_audio_chunk(self, chunk: torch.Tensor):
         """
         Transmits actual audio chunk to Kyutai Moshi server.
         Automatically resamples 16 kHz audio to 24 kHz for Kyutai Mimi codec.
+        Encodes into Ogg Opus stream using sphn as expected by moshi/server.py.
         """
         if not self.is_connected or not self._websocket:
             if self.mock_mode:
@@ -191,28 +212,42 @@ class MoshiModelAdapter:
         else:
             data_24k = data_np
 
-        # Encode to 16-bit signed PCM bytes
-        pcm_np = (data_24k * 32767.0).clip(-32768, 32767).astype(np.int16)
-        raw_bytes = pcm_np.tobytes()
-
-        # Kyutai Moshi wire protocol prefixes audio data with byte 0x01
-        tagged_bytes = b"\x01" + raw_bytes
-
-        try:
-            await self._websocket.send(tagged_bytes)
-            self.total_frames_sent += 1
-            self.last_send_latency_ms = round((time.perf_counter() - t0) * 1000.0, 2)
-        except Exception as e:
-            self.last_error = f"WebSocket send failed: {e}"
-            self.state = MoshiConnectionState.SESSION_ERROR
+        if self._opus_writer is not None:
+            # Moshi server requires valid Ogg Opus packets via sphn.OpusStreamWriter
+            self._send_pcm_buffer = np.concatenate((self._send_pcm_buffer, data_24k))
+            while len(self._send_pcm_buffer) >= 960:
+                frame = self._send_pcm_buffer[:960]
+                self._send_pcm_buffer = self._send_pcm_buffer[960:]
+                opus_bytes = self._opus_writer.append_pcm(frame)
+                if len(opus_bytes) > 0:
+                    tagged_bytes = b"\x01" + opus_bytes
+                    try:
+                        await self._websocket.send(tagged_bytes)
+                        self.total_frames_sent += 1
+                        self.last_send_latency_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+                    except Exception as e:
+                        self.last_error = f"WebSocket send failed: {e}"
+                        self.state = MoshiConnectionState.SESSION_ERROR
+                        break
+        else:
+            # Fallback raw PCM
+            pcm_np = (data_24k * 32767.0).clip(-32768, 32767).astype(np.int16)
+            tagged_bytes = b"\x01" + pcm_np.tobytes()
+            try:
+                await self._websocket.send(tagged_bytes)
+                self.total_frames_sent += 1
+                self.last_send_latency_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+            except Exception as e:
+                self.last_error = f"WebSocket send failed: {e}"
+                self.state = MoshiConnectionState.SESSION_ERROR
 
     async def receive_audio_stream(self, max_mock_chunks: int = 10) -> AsyncGenerator[torch.Tensor, None]:
         """
         Asynchronously yields incoming agent response audio frames from genuine Moshi server.
-        Decodes incoming binary PCM audio and resamples 24 kHz -> 16 kHz.
+        Decodes incoming Ogg Opus binary audio and resamples 24 kHz -> 16 kHz.
         Handles Kyutai Moshi multiplexed stream tags:
           0x00: Heartbeat/Handshake
-          0x01: Audio chunk (Mimi codec / PCM)
+          0x01: Audio chunk (Mimi codec / Ogg Opus)
           0x02: Text transcript token
         """
         if self.mock_mode:
@@ -248,14 +283,27 @@ class MoshiModelAdapter:
                         # Handshake or ping frame, keep session alive
                         continue
                     elif tag == 0x01:
-                        # Audio chunk payload
-                        if len(payload) >= 2:
-                            pcm = np.frombuffer(payload, dtype=np.int16).astype(np.float32) / 32767.0
-                            if self.moshi_sample_rate != self.sample_rate and len(pcm) >= 3:
-                                pcm_16k = scipy.signal.resample_poly(pcm, up=2, down=3).astype(np.float32)
+                        # Audio chunk payload (Ogg Opus encoded)
+                        if len(payload) > 0:
+                            if self._opus_reader is not None:
+                                try:
+                                    pcm = self._opus_reader.append_bytes(payload)
+                                    if pcm.shape[-1] > 0:
+                                        if self.moshi_sample_rate != self.sample_rate and len(pcm) >= 3:
+                                            pcm_16k = scipy.signal.resample_poly(pcm, up=2, down=3).astype(np.float32)
+                                        else:
+                                            pcm_16k = pcm
+                                        yield torch.from_numpy(pcm_16k)
+                                except Exception as dec_err:
+                                    log.debug("Opus decode frame exception: %s", dec_err)
                             else:
-                                pcm_16k = pcm
-                            yield torch.from_numpy(pcm_16k)
+                                if len(payload) >= 2:
+                                    pcm = np.frombuffer(payload, dtype=np.int16).astype(np.float32) / 32767.0
+                                    if self.moshi_sample_rate != self.sample_rate and len(pcm) >= 3:
+                                        pcm_16k = scipy.signal.resample_poly(pcm, up=2, down=3).astype(np.float32)
+                                    else:
+                                        pcm_16k = pcm
+                                    yield torch.from_numpy(pcm_16k)
                     elif tag == 0x02:
                         # Text transcript token payload
                         try:
