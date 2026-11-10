@@ -162,7 +162,7 @@ function VoiceStudio() {
   const statusQuery = useStatus();
   const micQuery = useMicrophones();
   const spkQuery = useSpeakerDevices();
-  const [endpointUrl, setEndpointUrl] = useState("https://51b58c1cff28da6cf5.gradio.live/");
+  const [endpointUrl, setEndpointUrl] = useState("https://980cf47b0a3df2311d.gradio.live/");
   const [inputDevice, setInputDevice] = useState("Default System Microphone");
   const [outputDevice, setOutputDevice] = useState("Default Speaker");
   const [filter, setFilter] = useState("All events");
