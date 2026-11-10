@@ -130,7 +130,7 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
       const int16 = new Int16Array(bytes.buffer);
       const float32 = new Float32Array(int16.length);
       for (let i = 0; i < int16.length; i++) {
-        float32[i] = int16[i] / 32768.0;
+        float32[i] = (int16[i] ?? 0) / 32768.0;
       }
       const buffer = ctx.createBuffer(1, float32.length, 16000);
       buffer.copyToChannel(float32, 0);
@@ -239,7 +239,12 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
       }
 
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      const ctx = new AudioCtx();
+      let ctx: AudioContext;
+      try {
+        ctx = new AudioCtx({ sampleRate: 16000 });
+      } catch {
+        ctx = new AudioCtx();
+      }
       audioCtxRef.current = ctx;
 
       const source = ctx.createMediaStreamSource(stream);
@@ -276,7 +281,7 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
         // Calculate real RMS dBFS
         let sum = 0;
         for (let i = 0; i < timeData.length; i++) {
-          const val = (timeData[i] - 128) / 128;
+          const val = ((timeData[i] ?? 128) - 128) / 128;
           sum += val * val;
         }
         const rms = Math.sqrt(sum / timeData.length);
@@ -295,9 +300,23 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
 
         if (wsRef.current?.readyState === WebSocket.OPEN) {
           const inputData = ev.inputBuffer.getChannelData(0);
-          const int16 = new Int16Array(inputData.length);
-          for (let i = 0; i < inputData.length; i++) {
-            int16[i] = Math.max(-32768, Math.min(32767, Math.round(inputData[i] * 32768)));
+          const currentSr = ctx.sampleRate || 16000;
+          let samples16k: Float32Array;
+
+          if (currentSr !== 16000 && currentSr > 0) {
+            const ratio = currentSr / 16000;
+            const newLen = Math.round(inputData.length / ratio);
+            samples16k = new Float32Array(newLen);
+            for (let i = 0; i < newLen; i++) {
+              samples16k[i] = inputData[Math.min(inputData.length - 1, Math.round(i * ratio))] ?? 0;
+            }
+          } else {
+            samples16k = inputData;
+          }
+
+          const int16 = new Int16Array(samples16k.length);
+          for (let i = 0; i < samples16k.length; i++) {
+            int16[i] = Math.max(-32768, Math.min(32767, Math.round((samples16k[i] ?? 0) * 32768)));
           }
           const b64 = btoa(String.fromCharCode(...new Uint8Array(int16.buffer)));
           wsRef.current.send(
@@ -362,23 +381,22 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
         // Connect to backend WebSocket if available
         try {
           const ws = createVoiceSocket(
-            (msg) => {
-              if (msg.type === "state_update") {
-                if (msg.vad_state !== undefined) setVadState(msg.vad_state);
+            (msg: any) => {
+              if (msg?.type === "state_update") {
+                if (msg.vad_state !== undefined) setVadState(String(msg.vad_state));
                 if (msg.speech_prob !== undefined) setSpeechProb(Number(msg.speech_prob));
                 if (msg.pause_duration !== undefined) setPauseDuration(Number(msg.pause_duration));
-                if (msg.adaptive_intention !== undefined) setAdaptiveIntention(msg.adaptive_intention);
+                if (msg.adaptive_intention !== undefined) setAdaptiveIntention(String(msg.adaptive_intention));
                 if (msg.p_end !== undefined) setPEnd(Number(msg.p_end));
-                if (msg.controller_state !== undefined) setControllerState(msg.controller_state);
-                if (msg.controller_action !== undefined) setControllerAction(msg.controller_action);
+                if (msg.controller_state !== undefined) setControllerState(String(msg.controller_state));
+                if (msg.controller_action !== undefined) setControllerAction(String(msg.controller_action));
                 if (msg.vad_latency_ms !== undefined) setVadLatencyMs(Number(msg.vad_latency_ms));
                 if (msg.decision_latency_ms !== undefined) setDecisionLatencyMs(Number(msg.decision_latency_ms));
-                // Increment so the UI log only adds rows on real backend data
                 setWsUpdateCount((n) => n + 1);
-              } else if (msg.type === "assistant_audio" && msg.data) {
-                playAssistantAudio(msg.data);
+              } else if (msg?.type === "assistant_audio" && msg.data) {
+                playAssistantAudio(String(msg.data));
                 if (msg.text) {
-                  addTimelineEvent("Agent", "Agent spoken response", msg.text);
+                  addTimelineEvent("Agent", "Agent spoken response", String(msg.text));
                 }
               }
             },

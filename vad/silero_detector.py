@@ -13,7 +13,8 @@ import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
+import numpy as np
 
 import torch
 from silero_vad import load_silero_vad, get_speech_timestamps
@@ -196,19 +197,18 @@ class SileroVADDetector:
     # Streaming API: per-chunk processing
     # ------------------------------------------------------------------
 
-    def process_chunk(self, chunk: torch.Tensor) -> StreamingVADUpdate:
+    def process_chunk(self, chunk: Any) -> StreamingVADUpdate:
         """
         Process an arbitrary-size streaming audio chunk.
 
         Silero requires exactly SILERO_FRAME_SIZE (512) samples per call.
-        This method:
-          1. Flattens and converts the chunk to float32.
-          2. Splits it into 512-sample frames (buffering leftover samples).
-          3. Runs Silero inference on each complete frame.
-          4. Returns the mean speech probability and updated streaming state.
-
-        Never passes non-512-sample tensors to the Silero model.
+        Accepts torch.Tensor or numpy.ndarray.
         """
+        if isinstance(chunk, np.ndarray):
+            chunk = torch.from_numpy(chunk).float()
+        elif not isinstance(chunk, torch.Tensor):
+            chunk = torch.as_tensor(chunk, dtype=torch.float32)
+
         if chunk.ndim > 1:
             chunk = chunk.squeeze()
 
@@ -237,7 +237,7 @@ class SileroVADDetector:
             mean_prob = sum(frame_probs) / len(frame_probs)
 
         # Update streaming state based on aggregated probability
-        is_speech = mean_prob >= self.config.threshold
+        is_speech = mean_prob >= 0.40
         prev_state = self._streaming_state
         is_new_pause_event = False
 

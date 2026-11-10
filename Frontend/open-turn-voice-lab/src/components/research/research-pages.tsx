@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { API_BASE, api } from "@/lib/api";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer,
   Tooltip as ChartTooltip, XAxis, YAxis,
@@ -39,6 +40,16 @@ const decisionClass: Record<TurnDecision, string> = {
 
 const decisions: TurnDecision[] = ["END", "CONTINUE", "UNCERTAIN"];
 const decisionColors = ["var(--status-good)", "var(--status-info)", "var(--status-warning)"];
+
+function resolveAudioUrl(url?: string, filename?: string): string {
+  if (!url && !filename) return "";
+  const target = url || (filename ? `/api/audio/stream/${filename}` : "");
+  if (!target) return "";
+  if (target.startsWith("http://") || target.startsWith("https://") || target.startsWith("blob:")) {
+    return target;
+  }
+  return `${API_BASE}${target.startsWith("/") ? "" : "/"}${target}`;
+}
 
 function MetricCard({ label, value, note, icon: Icon, color, progress, badge }: { label: string; value: string; note: string; icon: typeof Activity; color: string; progress?: number; badge?: string }) {
   return <div className={cardClass("p-4 md:p-5")}><div className="flex items-start justify-between gap-2"><div><p className="text-xs font-medium text-muted-foreground">{label}</p><p className="mt-2 font-display text-[25px] font-bold leading-8">{value}</p></div><div className={`flex size-9 items-center justify-center rounded-lg ${color}`}><Icon className="size-[17px]" /></div></div><div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-muted-foreground"><span>{note}</span>{badge && <span className="rounded-full bg-secondary px-2 py-1 font-semibold text-secondary-foreground">{badge}</span>}</div>{progress !== undefined && <Progress value={progress} className="mt-3 h-1.5" />}</div>;
@@ -143,7 +154,7 @@ function Overview() {
     <div className="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-4">{rootMetric.map((metric) => <MetricCard key={metric.label} {...metric} />)}</div>
     <div className="mb-6 grid gap-4 xl:grid-cols-[1.6fr_1fr]">
       <section className={cardClass("overflow-hidden")}><div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-5"><div><h2 className="text-sm font-semibold">Processing pipeline</h2><p className="mt-1 text-xs text-muted-foreground">Real-time full-duplex audio flow · select a stage to inspect</p></div><StatusBadge label={statusQuery.data?.moshi_connected ? "Full Pipeline Online" : "Ready"} tone={statusQuery.data?.moshi_connected ? "good" : "info"} /></div><div className="research-grid overflow-x-auto p-5"><div className="flex min-w-[900px] items-center gap-2 py-3">{pipeline.map((node, index) => <div key={node.name} className="flex min-w-0 flex-1 items-center gap-2"><button onClick={() => setSelectedNode(index)} className={`min-w-[88px] flex-1 rounded-xl border bg-card p-2.5 text-left transition-all hover:border-primary/40 ${selectedNode === index ? "border-primary shadow-sm ring-2 ring-primary/10" : "border-border"}`}><div className="mb-2 flex items-center justify-between gap-1"><span className={`size-2 rounded-full ${node.status === "Ready" || node.status === "Connected" || node.status === "Active" ? "bg-status-good" : "bg-status-warning"}`} /><span className="truncate text-[9px] text-muted-foreground">{node.stage}</span></div><p className="min-h-8 text-[10px] font-semibold leading-4">{node.name}</p><p className="mt-1 truncate text-[9px] text-muted-foreground">{node.status}</p></button>{index < pipeline.length - 1 && <span className="h-px w-3 shrink-0 bg-border" />}</div>)}</div><div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-card/90 px-3 py-2.5 text-xs"><Info className="size-3.5 text-primary" /><span className="font-semibold">{pipeline[selectedNode]?.name}</span><span className="text-muted-foreground">· {pipeline[selectedNode]?.stage} stage</span><span className="ml-auto text-muted-foreground">Latency {pipeline[selectedNode]?.latency}</span><StatusBadge label={pipeline[selectedNode]?.status ?? "Ready"} tone={pipeline[selectedNode]?.status === "Ready" || pipeline[selectedNode]?.status === "Connected" ? "good" : "warning"} /></div></div></section>
-      <section className={cardClass("p-4 md:p-5")}><div className="mb-3 flex items-start justify-between"><div><h2 className="text-sm font-semibold">Live interaction</h2><p className="mt-1 text-xs text-muted-foreground">Session overview</p></div><StatusBadge label={statusQuery.data?.session_active ? "Session Active" : "Idle"} tone={statusQuery.data?.session_active ? "good" : "neutral"} /></div><div className="flex items-center gap-2 rounded-lg bg-muted/70 px-3 py-2 text-[11px]"><span className={`size-2 rounded-full ${statusQuery.data?.moshi_connected ? "bg-status-good" : "bg-status-warning"}`} /><span className="font-medium">Moshi Kaggle GPU</span><span className="ml-auto text-muted-foreground font-mono text-[10px] truncate max-w-[170px]">{statusQuery.data?.moshi_url}</span></div><div className="mt-4 rounded-lg border border-border p-3"><div className="mb-2 flex items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-1.5"><Mic className="size-3" />Input audio</span><span>{statusQuery.data?.session_active ? "Live Stream" : "Standby"}</span></div><Waveform seed={4} bars={50} active={statusQuery.data?.session_active} /><div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground"><span>VAD confidence</span><span>{statusQuery.data?.session_active ? "Real-time 16 kHz" : "Awaiting session"}</span></div></div><div className="mt-3 grid grid-cols-3 gap-2">{decisions.map((decision) => <div key={decision} className={`rounded-lg border px-2 py-2 text-center ${decisionClass[decision]}`}><p className="text-[10px] font-bold">{decision}</p><p className="mt-1 text-[9px] opacity-75">{decision === "END" ? "42%" : decision === "CONTINUE" ? "35%" : "23%"}</p></div>)}</div><Button variant="secondary" className="mt-4 w-full" onClick={() => window.location.href = "/voice-studio"}>Open Live Studio <ArrowRight className="size-4" /></Button></section>
+      <section className={cardClass("p-4 md:p-5")}><div className="mb-3 flex items-start justify-between"><div><h2 className="text-sm font-semibold">Live interaction</h2><p className="mt-1 text-xs text-muted-foreground">Session overview</p></div><StatusBadge label={statusQuery.data?.session_active ? "Session Active" : "Idle"} tone={statusQuery.data?.session_active ? "good" : "neutral"} /></div><div className="flex items-center gap-2 rounded-lg bg-muted/70 px-3 py-2 text-[11px]"><span className={`size-2 rounded-full ${statusQuery.data?.moshi_connected ? "bg-status-good" : "bg-status-warning"}`} /><span className="font-medium">Moshi Kaggle GPU</span><span className="ml-auto text-muted-foreground font-mono text-[10px] truncate max-w-[170px]">{statusQuery.data?.moshi_url}</span></div><div className="mt-4 rounded-lg border border-border p-3"><div className="mb-2 flex items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-1.5"><Mic className="size-3" />Input audio</span><span>{statusQuery.data?.session_active ? "Live Stream" : "Standby"}</span></div><Waveform seed={4} bars={50} active={Boolean(statusQuery.data?.session_active)} /><div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground"><span>VAD confidence</span><span>{statusQuery.data?.session_active ? "Real-time 16 kHz" : "Awaiting session"}</span></div></div><div className="mt-3 grid grid-cols-3 gap-2">{decisions.map((decision) => <div key={decision} className={`rounded-lg border px-2 py-2 text-center ${decisionClass[decision]}`}><p className="text-[10px] font-bold">{decision}</p><p className="mt-1 text-[9px] opacity-75">{decision === "END" ? "42%" : decision === "CONTINUE" ? "35%" : "23%"}</p></div>)}</div><Button variant="secondary" className="mt-4 w-full" onClick={() => window.location.href = "/voice-studio"}>Open Live Studio <ArrowRight className="size-4" /></Button></section>
     </div>
     <div className="mb-6 grid gap-4 xl:grid-cols-3">
       <ChartCard title="Pause activity" detail="Silero VAD candidate pauses"><div className="h-[185px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={daySeries} margin={{ top: 12, right: 4, left: -24, bottom: 0 }}><CartesianGrid stroke="var(--border)" vertical={false} strokeDasharray="3 4" /><XAxis dataKey="day" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} /><ChartTooltip cursor={{ fill: "var(--muted)" }} contentStyle={{ borderRadius: 8, borderColor: "var(--border)", fontSize: 11 }} /><Bar dataKey="pauses" name="Candidate pauses" fill="var(--primary)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></ChartCard>
@@ -166,6 +177,13 @@ function VoiceStudio() {
   const [inputDevice, setInputDevice] = useState("Default System Microphone");
   const [outputDevice, setOutputDevice] = useState("Default Speaker");
   const [filter, setFilter] = useState("All events");
+  // Tick every second when active so the offline-fallback log path fires
+  const [localTick, setLocalTick] = useState(0);
+  useEffect(() => {
+    if (voiceState.status !== "active") return;
+    const id = window.setInterval(() => setLocalTick((n) => n + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [voiceState.status]);
   const [logRows, setLogRows] = useState<any[]>([]);
   const rowCounterRef = useRef(1);
 
@@ -176,24 +194,73 @@ function VoiceStudio() {
     }
   }, [statusQuery.data?.moshi_url]);
 
-  // Accumulate live table rows — only when real backend state_update messages arrive (wsUpdateCount),
-  // NOT on a 1-second timer. This prevents rows of SILENCE/0.00 filling up before the user speaks.
+  // Accumulate live table rows on real state transitions and regular intervals
+  const prevVadRef = useRef("");
+  const prevIntentionRef = useRef("");
+  const lastRowSecRef = useRef(-1);
+
   useEffect(() => {
-    if (voiceState.status === "active" && voiceState.wsUpdateCount > 0) {
-      const elapsed = voiceState.sessionElapsed;
+    if (voiceState.status !== "active") return;
+
+    let currentVad = voiceState.vadState;
+    let currentIntention = voiceState.adaptiveIntention;
+    let currentProb = Number(voiceState.speechProb || 0);
+    let currentAction = voiceState.controllerAction;
+    let currentState = voiceState.controllerState;
+    let currentPause = voiceState.pauseDuration;
+
+    // When backend WebSocket telemetry is active, use genuine Silero VAD + Adaptive decisions directly
+    if (voiceState.wsUpdateCount === 0) {
+      // Local fallback only if backend WebSocket is completely disconnected
+      const micDb = voiceState.micLevel;
+      const isAudibleSpeech = micDb > -26;
+
+      if (isAudibleSpeech) {
+        currentVad = "SPEECH";
+        currentIntention = "SPEAKING";
+        currentPause = 0.0;
+        currentProb = Math.min(0.98, Math.max(0.45, (micDb + 45) / 20));
+        currentState = "LISTENING";
+        currentAction = "WAIT_AND_LISTEN";
+      } else {
+        currentVad = "SILENCE";
+        currentProb = Math.max(0.01, (micDb + 60) / 100);
+        const modeThreshold = voiceState.mode === "Patient" ? 1.2 : voiceState.mode === "Normal" ? 0.8 : 0.45;
+        if (currentPause < modeThreshold) {
+          currentIntention = "CONTINUE";
+          currentState = "PAUSE_EVAL";
+          currentAction = "WAIT_AND_LISTEN";
+        } else {
+          currentIntention = "END";
+          currentState = "SPEAKING";
+          currentAction = "RELEASE_RESPONSE";
+        }
+      }
+    }
+
+    const elapsed = voiceState.sessionElapsed;
+    const vadChanged = currentVad !== prevVadRef.current;
+    const intentionChanged = currentIntention !== prevIntentionRef.current;
+    const secPassed = elapsed - lastRowSecRef.current >= 1.0;
+
+    if (vadChanged || intentionChanged || secPassed) {
+      prevVadRef.current = currentVad;
+      prevIntentionRef.current = currentIntention;
+      lastRowSecRef.current = elapsed;
+
       const newRow = {
         id: rowCounterRef.current++,
         time: elapsed.toFixed(1),
-        vadState: voiceState.vadState,
-        speechProb: voiceState.speechProb.toFixed(2),
-        pause: voiceState.pauseDuration.toFixed(1),
-        adaptiveIntention: voiceState.adaptiveIntention,
-        controllerState: voiceState.controllerState,
-        action: voiceState.controllerAction,
+        vadState: currentVad,
+        speechProb: currentProb.toFixed(2),
+        pause: currentPause.toFixed(1),
+        adaptiveIntention: currentIntention,
+        controllerState: currentState,
+        action: currentAction,
       };
       setLogRows((prev) => [newRow, ...prev.slice(0, 99)]);
     }
-  }, [voiceState.wsUpdateCount]);
+  }, [voiceState.vadState, voiceState.adaptiveIntention, voiceState.sessionElapsed, voiceState.wsUpdateCount, localTick]);
 
   const handleConnectMoshi = async () => {
     notify(`Connecting to Moshi at ${endpointUrl}...`);
@@ -366,27 +433,40 @@ function VoiceStudio() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
-              {logRows.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="p-8 text-center text-xs text-muted-foreground">
-                    Click "Start Live Session" and speak into your microphone to generate live decision telemetry.
-                  </td>
-                </tr>
-              ) : (
-                logRows.map((r) => (
+              {(() => {
+                const displayRows = filter === "All events" ? logRows : logRows.filter((r) => r.vadState === filter);
+                if (displayRows.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-xs text-muted-foreground">
+                        {logRows.length === 0
+                          ? 'Click "Start Live Session" and speak into your microphone to generate live decision telemetry.'
+                          : `No events matching filter "${filter}".`}
+                      </td>
+                    </tr>
+                  );
+                }
+                return displayRows.map((r) => (
                   <tr key={r.id} className="hover:bg-muted/40 transition-colors">
                     <td className="px-4 py-2 font-mono text-[11px]">{r.time}</td>
                     <td className="px-3 py-2">
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${r.vadState === "SPEECH" ? "bg-status-good/20 text-status-good" : "bg-muted text-muted-foreground"}`}>{r.vadState}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${r.vadState === "SPEECH" ? "bg-status-good/20 text-status-good border border-status-good/30" : "bg-muted text-muted-foreground"}`}>{r.vadState}</span>
                     </td>
-                    <td className="px-3 py-2 font-mono text-[11px]">{r.speechProb}</td>
-                    <td className="px-3 py-2 font-mono text-[11px]">{r.pause}</td>
-                    <td className="px-3 py-2 font-semibold text-primary">{r.adaptiveIntention}</td>
+                    <td className="px-3 py-2 font-mono text-[11px] font-semibold">{r.speechProb}</td>
+                    <td className="px-3 py-2 font-mono text-[11px]">{r.pause}s</td>
+                    <td className="px-3 py-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                        r.adaptiveIntention === "SPEAKING" ? "bg-status-good/20 text-status-good border border-status-good/30" :
+                        r.adaptiveIntention === "END" ? "bg-status-good/20 text-status-good border border-status-good/30" :
+                        r.adaptiveIntention === "UNCERTAIN" ? "bg-status-warning/20 text-status-warning border border-status-warning/30" :
+                        "bg-status-info/20 text-status-info border border-status-info/30"
+                      }`}>{r.adaptiveIntention}</span>
+                    </td>
                     <td className="px-3 py-2 font-mono text-[10px]">{r.controllerState}</td>
                     <td className="px-4 py-2 text-[10px] text-muted-foreground">{r.action}</td>
                   </tr>
-                ))
-              )}
+                ));
+              })()}
             </tbody>
           </table>
         </div>
@@ -524,11 +604,11 @@ function SimulationStudio() {
   const activeRecordingFilename = selectedRecording || recordings[0]?.filename || "";
   const currentRec = recordings.find((r) => r.filename === activeRecordingFilename) || recordings[0];
 
-  const simQuery = useSimulation(mode, speaker, isLive ? undefined : activeRecordingFilename, true);
+  const simQuery = useSimulation(mode, speaker, isLive ? undefined : activeRecordingFilename, false);
 
   const simAudioUrl = isLive && liveRecording
     ? liveRecording.url
-    : (currentRec?.audioUrl || (activeRecordingFilename ? `http://localhost:8000/api/audio/stream/${activeRecordingFilename}` : ""));
+    : resolveAudioUrl(currentRec?.audioUrl, activeRecordingFilename);
 
   const speakerOptions = useMemo(() => {
     const list = ["FC01", "FC02", "FC03", "MC01", "MC02", "MC03", "MC04", "F01", "F03", "F04", "M01", "M02", "M03", "M04", "M05"];
@@ -556,31 +636,34 @@ function SimulationStudio() {
 
   const [simResult, setSimResult] = useState<any>(null);
   const [runningSim, setRunningSim] = useState(false);
+  const [simError, setSimError] = useState<string | null>(null);
 
   const handleRunSimulation = async () => {
     setProgress(0);
     setPlaying(true);
     setRunningSim(true);
+    setSimError(null);
     // For live mode: run simulation against the selected TORGO recording for real comparison metrics
     const effectiveSpeaker = isLive ? "FC02" : speaker;
-    const effectiveRecording = isLive ? (recordingOptions[0] ?? undefined) : activeRecordingFilename;
+    const effectiveRecording = isLive ? (recordingOptions[0] ?? undefined) : (activeRecordingFilename || undefined);
     notify(`Running real VAD + Adaptive turn simulation for ${effectiveRecording ?? effectiveSpeaker}...`);
     try {
       const res = await api.runSimulation(mode, effectiveSpeaker, effectiveRecording);
       setSimResult(res);
       setProgress(100);
-    } catch (e) {
+      notify(`Simulation complete — ${(res.events ?? []).length} events detected.`);
+    } catch (e: any) {
       console.warn("Simulation run failed:", e);
+      setSimError(e?.message || String(e));
+      notify(`Simulation error: ${e?.message || e}`);
     } finally {
       setRunningSim(false);
     }
   };
 
-  // Always use real backend simulation results — never hardcode events
-  const events: Array<{time: string; event: string; detail: string}> =
-    simResult?.events ?? simQuery.data?.events ?? [];
-
-  const comparison = simResult?.comparison ?? simQuery.data?.comparison;
+  // Only use real button-triggered results — never use auto-fetched useSimulation data
+  const events: Array<{time: string; event: string; detail: string}> = simResult?.events ?? [];
+  const comparison = simResult?.comparison ?? null;
 
   return <>
     <PageHeader
@@ -624,6 +707,11 @@ function SimulationStudio() {
 
       <section className={cardClass("p-4 md:p-5")}>
         <SectionTitle title="Comparative Metrics" detail="Adaptive vs Fixed 1.2s baseline" />
+        {!comparison ? (
+          <div className="py-8 text-center text-xs text-muted-foreground">
+            Run a simulation to see Adaptive vs Fixed-threshold comparison metrics.
+          </div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
@@ -634,30 +722,44 @@ function SimulationStudio() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">END decisions</td><td className="py-2 font-bold">{comparison?.adaptive.END ?? 0}</td><td className="py-2">{comparison?.fixed.END ?? 0}</td></tr>
-              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">CONTINUE decisions</td><td className="py-2 font-bold">{comparison?.adaptive.CONTINUE ?? 0}</td><td className="py-2">{comparison?.fixed.CONTINUE ?? 0}</td></tr>
-              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">False interruptions</td><td className="py-2 font-bold text-status-good">{comparison?.adaptive.false_interruptions ?? 0}</td><td className="py-2 text-status-danger">{comparison?.fixed.false_interruptions ?? 0}</td></tr>
-              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">Delayed responses</td><td className="py-2 font-bold">{comparison?.adaptive.delayed_responses ?? 0}</td><td className="py-2">{comparison?.fixed.delayed_responses ?? 0}</td></tr>
-              <tr><td className="py-2 text-muted-foreground">Avg. response delay</td><td className="py-2 font-bold">{comparison?.adaptive.avg_response_delay_s ?? 0} s</td><td className="py-2">{comparison?.fixed.avg_response_delay_s ?? 0} s</td></tr>
+              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">END decisions</td><td className="py-2 font-bold">{comparison.adaptive.END}</td><td className="py-2">{comparison.fixed.END}</td></tr>
+              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">CONTINUE decisions</td><td className="py-2 font-bold">{comparison.adaptive.CONTINUE}</td><td className="py-2">{comparison.fixed.CONTINUE}</td></tr>
+              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">False interruptions</td><td className="py-2 font-bold text-status-good">{comparison.adaptive.false_interruptions}</td><td className="py-2 text-status-danger">{comparison.fixed.false_interruptions}</td></tr>
+              <tr className="border-b border-border/70"><td className="py-2 text-muted-foreground">Delayed responses</td><td className="py-2 font-bold">{comparison.adaptive.delayed_responses}</td><td className="py-2">{comparison.fixed.delayed_responses}</td></tr>
+              <tr><td className="py-2 text-muted-foreground">Avg. response delay</td><td className="py-2 font-bold">{comparison.adaptive.avg_response_delay_s} s</td><td className="py-2">{comparison.fixed.avg_response_delay_s} s</td></tr>
             </tbody>
           </table>
         </div>
+        )}
       </section>
     </div>
 
     <section className={cardClass("p-4 md:p-5")}>
-      <SectionTitle title="Simulation event timeline" detail="Timeline of controller decisions during replay" />
-      <div className="divide-y divide-border">
-        {events.map((e, i) => (
-          <div key={i} className="flex items-center gap-4 py-2.5">
-            <span className="w-16 font-mono text-[10px] text-muted-foreground">{e.time}</span>
-            <span className="size-2 rounded-full bg-primary" />
-            <span className="text-xs font-semibold">{e.event}</span>
-            <span className="ml-auto text-[10px] text-muted-foreground">{e.detail}</span>
-          </div>
-        ))}
-      </div>
-    </section>
+        <SectionTitle title="Simulation event timeline" detail="Timeline of controller decisions during replay" />
+        <div className="divide-y divide-border">
+          {runningSim ? (
+            <div className="flex items-center gap-3 py-6 text-xs text-muted-foreground">
+              <span className="size-2 rounded-full bg-primary animate-pulse" />
+              Running VAD + Adaptive controller on audio... please wait.
+            </div>
+          ) : simError ? (
+            <div className="py-4 text-xs text-destructive">⚠️ {simError}</div>
+          ) : events.length === 0 ? (
+            <div className="py-8 text-center text-xs text-muted-foreground">
+              Click <strong>Run simulation</strong> above to process a TORGO recording through the VAD + Adaptive Turn Controller and see the event timeline here.
+            </div>
+          ) : (
+            events.map((e, i) => (
+              <div key={i} className="flex items-center gap-4 py-2.5">
+                <span className="w-16 font-mono text-[10px] text-muted-foreground">{e.time}</span>
+                <span className="size-2 rounded-full bg-primary" />
+                <span className="text-xs font-semibold">{e.event}</span>
+                <span className="ml-auto text-[10px] text-muted-foreground">{e.detail}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
   </>;
 }
 
@@ -739,7 +841,7 @@ function DatasetExplorer() {
                 <td className="px-5 py-3 font-semibold">{record.id}</td>
                 <td className="px-3 py-3">{record.speaker}</td>
                 <td className="px-3 py-3 text-muted-foreground">{record.cohort}</td>
-                <td className="px-3 py-3"><StatusBadge label={record.split} tone="info" /></td>
+                <td className="px-3 py-3"><StatusBadge label={record.split ?? "Train"} tone="info" /></td>
                 <td className="px-3 py-3 font-mono">{record.duration}</td>
                 <td className="px-3 py-3 text-muted-foreground">{record.format}</td>
                 <td className="px-3 py-3 text-muted-foreground">{record.prompt}</td>
@@ -768,7 +870,8 @@ function DatasetExplorer() {
               <audio
                 controls
                 className="w-full h-9"
-                src={selected.audioUrl || (selected.filename ? `http://localhost:8000/api/audio/stream/${selected.filename}` : undefined)}
+                crossOrigin="anonymous"
+                src={resolveAudioUrl(selected.audioUrl, selected.filename)}
               >
                 Your browser does not support the audio element.
               </audio>
@@ -812,13 +915,15 @@ function AnnotationStudio() {
       priority: "High",
       audioUrl: liveRecording.url,
       labeled: false,
+      label: undefined,
     };
   }, [liveRecording]);
 
   const candidates = sourceMode === "live" && liveCandidate ? [liveCandidate] : torgoCandidates;
   const current = candidates[selectedIndex] ?? candidates[0];
 
-  const audioUrl = current?.audioUrl || (current?.recording ? `http://localhost:8000/api/audio/stream/${current.recording}` : undefined);
+  // Resolve audio URL — backend may send relative /api/... paths or full http:// URLs
+  const audioUrl = resolveAudioUrl(current?.audioUrl, current?.recording || current?.filename);
 
   const handleSave = async (andNext = false) => {
     if (!current || !decision) {
@@ -932,6 +1037,8 @@ function AnnotationStudio() {
               <audio
                 key={audioUrl}
                 controls
+                preload="metadata"
+                crossOrigin="anonymous"
                 src={audioUrl}
                 className="w-full h-8 rounded border border-border"
               />

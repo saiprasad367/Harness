@@ -58,12 +58,19 @@ export interface DatasetStats {
 export interface Recording {
   id: string;
   file: string;
+  filename: string;    // actual file name used for audio streaming
   duration: string;
   seconds: number;
   format: string;
   sample_rate: string;
+  sampleRate?: string;
   status: string;
   pauses: number;
+  speaker?: string;
+  cohort?: string;
+  split?: string;
+  prompt?: string;
+  audioUrl?: string;   // full or relative URL to /api/audio/stream/<filename>
 }
 
 export interface BenchmarkMetric {
@@ -87,6 +94,7 @@ export interface BenchmarkResult {
 export interface CandidatePause {
   id: string;
   recording: string;
+  filename?: string;
   speaker: string;
   cohort: string;
   duration: string;
@@ -94,6 +102,9 @@ export interface CandidatePause {
   priority: string;
   labeled?: boolean;
   label?: string;
+  start_sec?: number;
+  end_sec?: number;
+  audioUrl?: string;
 }
 
 export interface AnnotationQueue {
