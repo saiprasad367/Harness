@@ -44,6 +44,10 @@ export interface VoiceSessionState {
   droppedFrames: number;
   capturedChunks: number;
   sessionElapsed: number;
+  /** Incremented every time a real state_update arrives from the backend WebSocket.
+   *  Use this — NOT sessionElapsed — to trigger log row additions in the UI,
+   *  so rows only appear when real VAD data has been received. */
+  wsUpdateCount: number;
   timeline: TimelineEvent[];
   frequencyData: number[]; // Real frequency spectrum bins for voice visualization
   error: string | null;
@@ -89,6 +93,8 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
   const [error, setError] = useState<string | null>(null);
   const [mode, setModeState] = useState("Patient");
   const [recordedAudio, setRecordedAudio] = useState<RecordedSessionAudio | null>(null);
+  // Counts real backend state_update messages — used to trigger log rows only on real data
+  const [wsUpdateCount, setWsUpdateCount] = useState(0);
 
   const wsRef = useRef<WebSocket | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -333,6 +339,7 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
       eventCounterRef.current = 0;
       setSessionElapsed(0);
       setCapturedChunks(0);
+      setWsUpdateCount(0);
 
       // Start hardware microphone & real-time visualizer immediately
       try {
@@ -355,6 +362,10 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
                 if (msg.controller_action !== undefined) setControllerAction(msg.controller_action);
                 if (msg.vad_latency_ms !== undefined) setVadLatencyMs(Number(msg.vad_latency_ms));
                 if (msg.decision_latency_ms !== undefined) setDecisionLatencyMs(Number(msg.decision_latency_ms));
+                // Increment so the UI log only adds rows on real backend data
+                setWsUpdateCount((n) => n + 1);
+                // Increment so the UI log only adds rows on real backend data
+                setWsUpdateCount((n) => n + 1);
               } else if (msg.type === "assistant_audio" && msg.data) {
                 playAssistantAudio(msg.data);
                 if (msg.text) {
@@ -446,6 +457,7 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
     droppedFrames,
     capturedChunks,
     sessionElapsed,
+    wsUpdateCount,
     timeline,
     frequencyData,
     error,

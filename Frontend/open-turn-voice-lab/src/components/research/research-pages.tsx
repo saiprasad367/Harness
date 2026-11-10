@@ -176,9 +176,10 @@ function VoiceStudio() {
     }
   }, [statusQuery.data?.moshi_url]);
 
-  // Accumulate live table rows matching the user's test output table
+  // Accumulate live table rows — only when real backend state_update messages arrive (wsUpdateCount),
+  // NOT on a 1-second timer. This prevents rows of SILENCE/0.00 filling up before the user speaks.
   useEffect(() => {
-    if (voiceState.status === "active") {
+    if (voiceState.status === "active" && voiceState.wsUpdateCount > 0) {
       const elapsed = voiceState.sessionElapsed;
       const newRow = {
         id: rowCounterRef.current++,
@@ -190,9 +191,9 @@ function VoiceStudio() {
         controllerState: voiceState.controllerState,
         action: voiceState.controllerAction,
       };
-      setLogRows((prev) => [newRow, ...prev.slice(0, 19)]);
+      setLogRows((prev) => [newRow, ...prev.slice(0, 99)]);
     }
-  }, [voiceState.sessionElapsed, voiceState.vadState, voiceState.adaptiveIntention]);
+  }, [voiceState.wsUpdateCount]);
 
   const handleConnectMoshi = async () => {
     notify(`Connecting to Moshi at ${endpointUrl}...`);
@@ -277,18 +278,18 @@ function VoiceStudio() {
     <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
       <div className={cardClass("p-3.5")}>
         <p className="text-[10px] font-bold uppercase text-muted-foreground">MICROPHONE LEVEL</p>
-        <p className="mt-1 text-xl font-bold">{isRunning ? `${voiceState.micLevel} dBFS` : "-60.0 dBFS"}</p>
-        <p className="mt-1 text-[10px] text-muted-foreground">Captured: {voiceState.capturedChunks} chunks</p>
+        <p className="mt-1 text-xl font-bold">{isRunning ? `${voiceState.micLevel} dBFS` : "— dBFS"}</p>
+        <p className="mt-1 text-[10px] text-muted-foreground">{isRunning ? `Captured: ${voiceState.capturedChunks} chunks` : "Start session to capture"}</p>
       </div>
 
       <div className={cardClass("p-3.5")}>
         <p className="text-[10px] font-bold uppercase text-muted-foreground">VAD ACTIVITY</p>
         <div className="mt-1 flex items-center gap-1.5">
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${voiceState.vadState === "SPEECH" ? "bg-status-good text-white" : "bg-muted text-muted-foreground"}`}>
-            {voiceState.vadState}
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${!isRunning ? "bg-muted text-muted-foreground" : voiceState.vadState === "SPEECH" ? "bg-status-good text-white" : "bg-muted text-muted-foreground"}`}>
+            {isRunning ? voiceState.vadState : "IDLE"}
           </span>
         </div>
-        <p className="mt-1 text-[10px] text-muted-foreground">Speech Prob: {voiceState.speechProb.toFixed(2)}</p>
+        <p className="mt-1 text-[10px] text-muted-foreground">Speech Prob: {isRunning ? voiceState.speechProb.toFixed(2) : "—"}</p>
       </div>
 
       <div className={cardClass("p-3.5")}>
@@ -315,9 +316,9 @@ function VoiceStudio() {
     {/* Real Diagnostics Bar */}
     <div className="mb-4 flex flex-wrap items-center gap-4 rounded-xl border border-border bg-card p-3 text-xs">
       <span className="font-bold text-primary flex items-center gap-1"><Zap className="size-3.5" /> REAL DIAGNOSTICS:</span>
-      <span className="rounded bg-muted px-2 py-1 text-[11px]">VAD Latency: <b>15.08ms</b></span>
-      <span className="rounded bg-muted px-2 py-1 text-[11px]">Decision Latency: <b>8.02ms</b></span>
-      <span className="rounded bg-muted px-2 py-1 text-[11px]">Audio Buffer: <b>0 chunks</b></span>
+      <span className="rounded bg-muted px-2 py-1 text-[11px]">VAD Latency: <b>{isRunning && voiceState.vadLatencyMs > 0 ? `${voiceState.vadLatencyMs.toFixed(2)}ms` : "—"}</b></span>
+      <span className="rounded bg-muted px-2 py-1 text-[11px]">Decision Latency: <b>{isRunning && voiceState.decisionLatencyMs > 0 ? `${voiceState.decisionLatencyMs.toFixed(2)}ms` : "—"}</b></span>
+      <span className="rounded bg-muted px-2 py-1 text-[11px]">Audio Buffer: <b>{voiceState.audioBufferChunks} chunks</b></span>
       <span className="rounded bg-muted px-2 py-1 text-[11px]">Dropped Frames: <b>{voiceState.droppedFrames}</b></span>
     </div>
 
