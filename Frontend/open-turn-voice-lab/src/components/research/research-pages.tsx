@@ -519,10 +519,10 @@ function SimulationStudio() {
   }, [liveRecording]);
 
   const recordingOptions = useMemo(() => {
-    if (isLive) return ["live_session.webm"];
+    // For live mode: still show TORGO recordings so the backend can run a real simulation
     if (recordings.length > 0) return recordings.map((r) => r.filename);
     return [`REC-${speaker}-0001`];
-  }, [isLive, recordings, speaker]);
+  }, [recordings, speaker]);
 
   const isDisjointTest = ["FC03", "MC02", "MC03", "M05"].includes(speaker);
   const isDisjointVal = ["FC01", "MC04", "M03", "F03"].includes(speaker);
@@ -541,9 +541,12 @@ function SimulationStudio() {
     setProgress(0);
     setPlaying(true);
     setRunningSim(true);
-    notify(`Running real VAD + Adaptive turn simulation for ${isLive ? 'My Live Session' : activeRecordingFilename}...`);
+    // For live mode: run simulation against the selected TORGO recording for real comparison metrics
+    const effectiveSpeaker = isLive ? "FC02" : speaker;
+    const effectiveRecording = isLive ? (recordingOptions[0] ?? undefined) : activeRecordingFilename;
+    notify(`Running real VAD + Adaptive turn simulation for ${effectiveRecording ?? effectiveSpeaker}...`);
     try {
-      const res = await api.runSimulation(mode, speaker, isLive ? undefined : activeRecordingFilename);
+      const res = await api.runSimulation(mode, effectiveSpeaker, effectiveRecording);
       setSimResult(res);
       setProgress(100);
     } catch (e) {
@@ -553,18 +556,11 @@ function SimulationStudio() {
     }
   };
 
-  const events = isLive && liveRecording ? [
-    { time: "00:00.6", event: "User speech initiated", detail: "Microphone RMS -34 dBFS · Silero VAD active" },
-    { time: "00:02.1", event: "Vocal energy sustained", detail: "VAD confidence 0.99 · Controller in LISTENING" },
-    { time: "00:03.2", event: "Intra-turn pause · 0.42 s", detail: "Mid-utterance breath · Patient threshold active" },
-    { time: "00:04.0", event: "CONTINUE intent verified", detail: "Adaptive model held turn · 0 false interruption" },
-    { time: `00:${String(liveRecording.duration).padStart(2, '0')}.0`, event: "Terminal silence detected", detail: "END confirmed · Response release scheduled" },
-  ] : (simResult?.events ?? simQuery.data?.events ?? []);
+  // Always use real backend simulation results — never hardcode events
+  const events: Array<{time: string; event: string; detail: string}> =
+    simResult?.events ?? simQuery.data?.events ?? [];
 
-  const comparison = isLive ? {
-    adaptive: { END: 1, CONTINUE: 4, false_interruptions: 0, delayed_responses: 0, avg_response_delay_s: 1.2 },
-    fixed: { END: 3, CONTINUE: 1, false_interruptions: 2, delayed_responses: 1, avg_response_delay_s: 0.8 },
-  } : (simResult?.comparison ?? simQuery.data?.comparison);
+  const comparison = simResult?.comparison ?? simQuery.data?.comparison;
 
   return <>
     <PageHeader
