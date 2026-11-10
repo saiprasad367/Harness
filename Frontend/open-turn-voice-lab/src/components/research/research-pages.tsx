@@ -197,9 +197,17 @@ function VoiceStudio() {
 
   const handleConnectMoshi = async () => {
     notify(`Connecting to Moshi at ${endpointUrl}...`);
-    await voiceActions.connect(endpointUrl);
-    statusQuery.refetch();
-    notify("Connected to Moshi WebSocket!");
+    try {
+      await voiceActions.connect(endpointUrl);
+      const res = await statusQuery.refetch();
+      if (res.data?.moshi_connected || voiceState.moshiConnected) {
+        notify("Connected to Moshi WebSocket!");
+      } else {
+        notify("Moshi URL updated. If still disconnected, check backend terminal.");
+      }
+    } catch (err: any) {
+      notify(`Connection error: ${err?.message || err}`);
+    }
   };
 
   const handleToggleSession = async () => {
@@ -209,12 +217,16 @@ function VoiceStudio() {
     } else {
       notify("Starting Live Session with Silero VAD...");
       setLogRows([]);
-      await voiceActions.startSession(voiceState.mode);
-      notify("Microphone captured! Speak into your microphone.");
+      try {
+        await voiceActions.startSession(voiceState.mode);
+        notify("Microphone captured! Speak into your microphone.");
+      } catch (err: any) {
+        notify(`Microphone error: ${err?.message || err}. Check browser microphone permissions.`);
+      }
     }
   };
 
-  const isConnected = voiceState.moshiConnected || statusQuery.data?.moshi_connected;
+  const isConnected = Boolean(voiceState.moshiConnected || statusQuery.data?.moshi_connected);
   const isRunning = voiceState.status === "active";
   const timeStr = `${Math.floor(voiceState.sessionElapsed / 60).toString().padStart(2, "0")}:${(voiceState.sessionElapsed % 60).toString().padStart(2, "0")}`;
 
@@ -228,6 +240,13 @@ function VoiceStudio() {
     </div>
 
     <PageHeader eyebrow="Full-duplex research engine" title="Live Voice Interaction Studio" description="Full-Duplex Pipeline: Physical Microphone → 512-Frame Silero VAD → Adaptive Turn Controller → Genuine Moshi Engine → Hardware Speaker." actions={<><Badge className="bg-primary/20 text-primary border-primary/30">Real Audio Capture</Badge><Badge className="bg-status-good/20 text-status-good border-status-good/30">Zero Synthetic Fallback</Badge></>} />
+
+    {/* Microphone Permission Warning Banner */}
+    {voiceState.error && (
+      <div className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive flex items-center justify-between">
+        <span>⚠️ <strong>Microphone Error:</strong> {voiceState.error} — Please click the lock icon in your browser URL bar and allow microphone access.</span>
+      </div>
+    )}
 
     {/* Kaggle Launch Hub Accordion */}
     <div className="mb-4 rounded-xl border border-primary/30 bg-secondary/30 p-3 text-xs">

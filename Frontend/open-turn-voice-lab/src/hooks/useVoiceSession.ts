@@ -183,15 +183,21 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
 
   const startMicrophone = useCallback(
     async (modeStr: string) => {
-      // 1. Prompt and capture physical microphone
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: true,
-        },
-      });
+      // 1. Prompt and capture physical microphone (with graceful fallback for all devices)
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: false,
+            autoGainControl: true,
+          },
+        });
+      } catch (constraintErr) {
+        // Fallback to basic audio constraint if specific constraints are unsupported by device
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
       streamRef.current = stream;
 
       // 2. Start hardware MediaRecorder to allow listening & analysing user speech
@@ -248,6 +254,11 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
       source.connect(analyser);
       analyser.connect(processor);
       processor.connect(ctx.destination);
+
+      // Crucial: Browsers suspend AudioContext until user interaction resumes it
+      if (ctx.state === "suspended") {
+        await ctx.resume();
+      }
 
       const freqArray = new Uint8Array(analyser.frequencyBinCount);
       const timeData = new Uint8Array(analyser.fftSize);
@@ -364,8 +375,6 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
                 if (msg.decision_latency_ms !== undefined) setDecisionLatencyMs(Number(msg.decision_latency_ms));
                 // Increment so the UI log only adds rows on real backend data
                 setWsUpdateCount((n) => n + 1);
-                // Increment so the UI log only adds rows on real backend data
-                setWsUpdateCount((n) => n + 1);
               } else if (msg.type === "assistant_audio" && msg.data) {
                 playAssistantAudio(msg.data);
                 if (msg.text) {
@@ -386,9 +395,10 @@ export function useVoiceSession(): [VoiceSessionState, VoiceSessionActions] {
           sessionElapsedRef.current = elapsed;
           setSessionElapsed(elapsed);
         }, 1000);
-      } catch (micErr) {
+      } catch (micErr: any) {
         setStatus("error");
-        setError(`Microphone permission denied: ${micErr}`);
+        setError(`Microphone error: ${micErr?.message || micErr}`);
+        throw micErr;
       }
     },
     [addTimelineEvent, startMicrophone],
